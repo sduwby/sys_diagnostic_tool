@@ -13,11 +13,20 @@
     <div id="header">
         <div>File: <span style="color: #4ec9b0;">multi_lang_kernel.src</span></div>
         <div class="stats">
-            <div class="blue">// Lv: <span id="level">1</span></div>
-            <div class="green">// Score: <span id="score">0.0</span></div>
-            <div class="red">// Stability: <span id="stability">100</span>%</div>
+            <div class="blue">// Iteration Step: <span id="level">1</span></div>
+            <div class="green">// Objects Processed: <span id="score">0.0</span></div>
+            <div class="red">// Buffer Capacity: <span id="stability">100</span>%</div>
             <div class="comment">// Time: <span id="timer">00:00</span></div>
         </div>
+        <div style="position: absolute; top: 10px; right: 10px;">
+            <button id="mode-toggle" style="background: #3e3e42; color: #d4d4d4; border: 1px solid #555; padding: 5px 12px; cursor: pointer; font-family: 'Consolas', monospace; font-size: 12px;">
+                Mode: <span id="mode-text">Click</span>
+            </button>
+        </div>
+    </div>
+    <div id="typing-input-area" style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(30,30,30,0.95); padding: 15px 20px; border: 1px solid #4ec9b0; border-radius: 4px; z-index: 1000;">
+        <span style="color: #4ec9b0; margin-right: 8px;">Type:</span>
+        <input type="text" id="typing-input" autocomplete="off" spellcheck="false" style="background: #1e1e1e; color: #d4d4d4; border: 1px solid #555; padding: 5px 10px; font-family: 'Consolas', monospace; width: 300px;">
     </div>
     <div id="game-container"></div>
 </div>
@@ -35,7 +44,7 @@
     <div style="margin-top: 10px; font-weight: bold; color: #d4d4d4;">> Performance History</div>
     <table id="leaderboard-table">
         <thead>
-            <tr><th>#</th><th>User</th><th>Score</th><th>Date</th></tr>
+            <tr><th>#</th><th>User</th><th>Objects</th><th>Date</th></tr>
         </thead>
         <tbody id="lb-body"></tbody>
     </table>

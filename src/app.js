@@ -49,6 +49,10 @@ const mainUI = document.getElementById('main-ui');
 const fakeScreen = document.getElementById('fake-screen');
 const gameOverScreen = document.getElementById('game-over');
 const cheatMsg = document.getElementById('cheat-msg');
+const modeToggleBtn = document.getElementById('mode-toggle');
+const modeText = document.getElementById('mode-text');
+const typingInputArea = document.getElementById('typing-input-area');
+const typingInput = document.getElementById('typing-input');
 
 let currentScore = 0.0;
 let missedCount = 0;
@@ -56,11 +60,19 @@ let seconds = 0;
 let isBossMode = false;
 let isGameOver = false;
 let globalSpeedMultiplier = 1.0;
+let interactionMode = 'click'; // 'click' or 'type'
 
 // --- 作弊状态变量 ---
 let inputBuffer = ''; // 记录按键
 let cheatWallActive = false; // black sheep wall
 let cheatMoneyTimer = null; // show me money
+
+// --- 公式化难度系统 ---
+// 难度随时间平滑上升：速度倍率 = 1.0 + (时间秒数/120)^1.2 * 0.5
+// 这意味着：0秒=1.0x, 60秒=1.185x, 120秒=1.5x, 180秒=1.86x, 240秒=2.25x
+function getDifficultyMultiplier() {
+    return 1.0 + Math.pow(seconds / 120, 1.2) * 0.5;
+}
 
 const getLevel = () => Math.floor(seconds / 60) + 1;
 const getMaxMisses = (lv) => 10 + (lv - 1) * 5;
@@ -74,6 +86,7 @@ function createSnippet() {
     const div = document.createElement('div');
     div.className = `code-line ${langData.colorClass}`;
     div.innerText = text;
+    div.dataset.text = text; // 存储文本用于键盘匹配
 
     const x = Math.random() * (window.innerWidth - 200);
     let y = window.innerHeight;
@@ -85,10 +98,16 @@ function createSnippet() {
     div.onmouseenter = () => { isPaused = true; };
     div.onmouseleave = () => { isPaused = false; };
 
-    div.onclick = (e) => {
-        addScore(langData.score, e.clientX, e.clientY);
-        div.remove();
-    };
+    // 点击模式
+    if (interactionMode === 'click') {
+        div.onclick = (e) => {
+            addScore(langData.score, e.clientX, e.clientY);
+            div.remove();
+        };
+    } else {
+        // 键盘模式下高亮匹配项
+        div.style.cursor = 'default';
+    }
 
     container.appendChild(div);
 
@@ -148,7 +167,7 @@ setInterval(() => {
         const lv = getLevel();
         timerElement.innerText = `${Math.floor(seconds / 60).toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}`;
         levelElement.innerText = lv;
-        globalSpeedMultiplier = 1.0 + (lv - 1) * 0.1;
+        globalSpeedMultiplier = getDifficultyMultiplier(); // 使用公式化难度
 
         const stability = Math.max(0, 100 - (missedCount / getMaxMisses(lv) * 100));
         stabilityElement.innerText = Math.floor(stability);
@@ -166,8 +185,92 @@ const gameLoop = () => {
 };
 gameLoop();
 
+// --- 模式切换 ---
+modeToggleBtn.addEventListener('click', () => {
+    interactionMode = interactionMode === 'click' ? 'type' : 'click';
+    modeText.innerText = interactionMode === 'click' ? 'Click' : 'Type';
+    
+    if (interactionMode === 'type') {
+        typingInputArea.style.display = 'block';
+        typingInput.focus();
+    } else {
+        typingInputArea.style.display = 'none';
+    }
+});
+
+// --- 键盘输入匹配逻辑 ---
+if (typingInput) {
+    typingInput.addEventListener('input', () => {
+        const inputValue = typingInput.value.trim();
+        if (inputValue.length === 0) {
+            // 清除所有高亮
+            document.querySelectorAll('.code-line').forEach(el => {
+                el.style.outline = 'none';
+            });
+            return;
+        }
+
+        // 查找匹配的代码片段
+        let matched = false;
+        document.querySelectorAll('.code-line').forEach(el => {
+            const text = el.dataset.text;
+            if (text && text.toLowerCase().includes(inputValue.toLowerCase())) {
+                el.style.outline = '2px solid #4ec9b0';
+                matched = true;
+            } else {
+                el.style.outline = 'none';
+            }
+        });
+    });
+
+    typingInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const inputValue = typingInput.value.trim();
+            
+            // 查找前缀匹配的代码片段（至少6个字符，且必须唯一匹配）
+            if (inputValue.length < 6) return; // 至少6个字符
+            
+            const allSnippets = Array.from(document.querySelectorAll('.code-line'));
+            const matchedSnippets = allSnippets.filter(el => {
+                const text = el.dataset.text;
+                return text && text.toLowerCase().startsWith(inputValue.toLowerCase());
+            });
+
+            // 必须是唯一匹配
+            if (matchedSnippets.length === 1) {
+                const matched = matchedSnippets[0];
+                // 计算得分（根据语言配置）
+                const className = matched.className;
+                let score = 1.0;
+                for (const lang of LANG_CONFIG) {
+                    if (className.includes(lang.colorClass)) {
+                        score = lang.score;
+                        break;
+                    }
+                }
+                
+                const rect = matched.getBoundingClientRect();
+                addScore(score, rect.left + rect.width / 2, rect.top + rect.height / 2);
+                matched.remove();
+                typingInput.value = '';
+                
+                // 清除所有高亮
+                document.querySelectorAll('.code-line').forEach(el => {
+                    el.style.outline = 'none';
+                });
+            }
+        }
+    });
+}
+
 // --- 键盘事件与作弊检测 ---
 window.addEventListener('keydown', (e) => {
+    // 如果在打字输入框或排行榜输入框中，不处理作弊码
+    if (e.target === typingInput || e.target === document.getElementById('player-name') || e.target === document.getElementById('terminal-input')) {
+        return;
+    }
+
     // Boss 键
     if (e.key === 'Escape' && !isGameOver) {
         isBossMode = !isBossMode;
@@ -252,7 +355,7 @@ function triggerGameOver() {
     isGameOver = true;
     gameOverScreen.style.display = 'block';
     document.getElementById('current-result').innerHTML = `
-        <div>Result: <span style="color:#fff">${currentScore.toFixed(1)}</span> pts</div>
+        <div>Processed: <span style="color:#fff">${currentScore.toFixed(1)}</span> objects</div>
         <div style="font-size:0.9em;color:#888">Runtime: ${timerElement.innerText}</div>
     `;
     checkHighScores();
@@ -308,7 +411,7 @@ window.exportScores = function(format = 'json') {
         filename = `diagnostic_logs_${Date.now()}.json`;
         mimeType = 'application/json';
     } else if (format === 'csv') {
-        const headers = 'Rank,User,Score,Date\n';
+        const headers = 'Rank,User,Objects,Date\n';
         const rows = scores.map((s, i) => `${i+1},${s.name},${s.score},${s.date}`).join('\n');
         content = headers + rows;
         filename = `diagnostic_logs_${Date.now()}.csv`;

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>System Diagnostic</title>
+</head>
+<body>
+    <div id="app">系统初始化中...</div>
+
+    <script>
+        (function() {
+            // --- 这里放你从 Compiler 生成的那串长长的密文 ---
+            const _payload = "在此处粘贴你生成的密文"; 
+            // ------------------------------------------
+
+            const _decrypt = (p) => {
+                const s = atob(p);
+                let o = '';
+                for(let i=0; i<s.length; i++) {
+                    o += String.fromCharCode(s.charCodeAt(i) ^ 0x42);
+                }
+                return decodeURIComponent(escape(o));
+            };
+
+            try {
+                const _realCode = _decrypt(_payload);
+                // 将加密的代码注入并执行
+                document.open();
+                document.write(_realCode);
+                document.close();
+            } catch(e) {
+                document.getElementById('app').innerText = "FATAL ERROR: KERNEL CORRUPTED";
+            }
+        })();
+    </script>
+</body>
+</html>

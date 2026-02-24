@@ -1,0 +1,158 @@
+body {
+    background-color: #1e1e1e;
+    color: #d4d4d4;
+    font-family: 'Consolas', 'Monaco', monospace;
+    margin: 0;
+    padding: 20px;
+    overflow: hidden;
+    user-select: none;
+}
+
+#header {
+    border-bottom: 1px solid #333;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    z-index: 100;
+}
+
+.stats {
+    display: flex;
+    gap: 20px;
+    font-size: 14px;
+}
+
+.code-line {
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 3px;
+    position: absolute;
+    white-space: nowrap;
+    transition: background-color 0.1s;
+    border: 1px solid transparent;
+    font-size: 14px;
+}
+
+.code-line:hover {
+    background-color: #2a2d2e;
+    border: 1px solid #444;
+    z-index: 50;
+}
+
+.float-score {
+    position: absolute;
+    color: #ffcc00;
+    font-weight: bold;
+    font-size: 16px;
+    pointer-events: none;
+    animation: floatUp 0.8s ease-out forwards;
+    z-index: 99;
+    text-shadow: 0px 0px 5px rgba(0, 0, 0, 0.8);
+}
+
+@keyframes floatUp {
+    0% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(-30px);
+        opacity: 0;
+    }
+}
+
+.c-ts { color: #f1e05a; }
+.c-cpp { color: #ce9178; }
+.c-java { color: #b07219; }
+.c-go { color: #00ADD8; }
+.c-py { color: #3572A5; }
+.green { color: #6a9955; }
+.red { color: #f44747; font-weight: bold; }
+.blue { color: #569cd6; }
+.comment { color: #6a9955; }
+
+.hidden { display: none !important; }
+
+#fake-screen {
+    color: #888;
+    font-size: 14px;
+    line-height: 1.6;
+    display: none;
+}
+
+#game-over {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #252526;
+    border: 1px solid #444;
+    padding: 20px;
+    width: 400px;
+    z-index: 1000;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+    font-size: 13px;
+}
+
+#leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    color: #ccc;
+}
+
+#leaderboard-table th {
+    text-align: left;
+    border-bottom: 1px solid #555;
+    padding: 5px;
+    color: #569cd6;
+}
+
+#leaderboard-table td {
+    border-bottom: 1px solid #333;
+    padding: 5px;
+}
+
+input#player-name {
+    background: #3c3c3c;
+    border: 1px solid #555;
+    color: #fff;
+    padding: 5px;
+    width: 60%;
+    font-family: inherit;
+}
+
+button {
+    background: #0e639c;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+button:hover { background: #1177bb; }
+
+.btn-restart {
+    background: #3e3e42;
+    margin-top: 10px;
+    width: 100%;
+}
+
+#cheat-msg {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #b5cea8;
+    background: #000;
+    padding: 5px 10px;
+    font-weight: bold;
+    display: none;
+    z-index: 2000;
+    border: 1px solid #6a9955;
+}

@@ -83,6 +83,33 @@ body {
     display: none;
 }
 
+#terminal-output {
+    margin-bottom: 10px;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+}
+
+#terminal-input-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#terminal-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #d4d4d4;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 14px;
+    outline: none;
+    padding: 0;
+}
+
+#terminal-input::selection {
+    background: #264f78;
+}
+
 #game-over {
     display: none;
     position: fixed;

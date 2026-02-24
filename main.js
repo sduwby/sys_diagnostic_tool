@@ -11,8 +11,8 @@ function createWindow() {
         minHeight: 600,
         backgroundColor: '#1e1e1e',
         webPreferences: {
-            nodeIntegration: false,
-            contextIsolation: true,
+            nodeIntegration: true,
+            contextIsolation: false,
             enableRemoteModule: false
         },
         icon: path.join(__dirname, 'src', 'icon.png'),

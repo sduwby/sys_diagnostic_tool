@@ -175,6 +175,11 @@ window.addEventListener('keydown', (e) => {
             mainUI.classList.add('hidden');
             fakeScreen.style.display = 'block';
             container.innerHTML = '';
+            // 聚焦命令行输入框
+            setTimeout(() => {
+                const terminalInput = document.getElementById('terminal-input');
+                if (terminalInput) terminalInput.focus();
+            }, 100);
         } else {
             mainUI.classList.remove('hidden');
             fakeScreen.style.display = 'none';
@@ -283,5 +288,95 @@ function renderLeaderboard(scores) {
         const tr = document.createElement('tr');
         tr.innerHTML = `<td>${index + 1}</td><td style="color:#ce9178">${s.name}</td><td style="font-weight:bold">${s.score.toFixed(1)}</td><td style="font-size:0.8em">${s.date}</td>`;
         tbody.appendChild(tr);
+    });
+}
+
+// --- 命令行功能 ---
+const terminalOutput = document.getElementById('terminal-output');
+const terminalInput = document.getElementById('terminal-input');
+
+// 命令历史
+let commandHistory = [];
+let historyIndex = -1;
+
+// 添加输出到终端
+function addTerminalOutput(text, color = '#888') {
+    const line = document.createElement('div');
+    line.style.color = color;
+    line.innerHTML = text.replace(/\n/g, '<br>');
+    terminalOutput.appendChild(line);
+    // 自动滚动到底部
+    terminalOutput.scrollTop = terminalOutput.scrollHeight;
+}
+
+// 执行命令
+function executeCommand(command) {
+    if (!command.trim()) return;
+    
+    // 显示命令
+    addTerminalOutput(`<span style="color: #4ec9b0;">user@system:~$</span> ${command}`, '#d4d4d4');
+    
+    // 添加到历史
+    commandHistory.push(command);
+    historyIndex = commandHistory.length;
+    
+    // 内置命令
+    if (command.trim() === 'clear') {
+        terminalOutput.innerHTML = '';
+        return;
+    }
+    
+    if (command.trim() === 'help') {
+        addTerminalOutput('Available commands:\n  clear - Clear terminal\n  help - Show this help\n  Or enter any system command', '#6a9955');
+        return;
+    }
+    
+    // 执行系统命令
+    try {
+        const { exec } = require('child_process');
+        exec(command, { timeout: 10000, maxBuffer: 1024 * 1024 }, (error, stdout, stderr) => {
+            if (error) {
+                addTerminalOutput(`Error: ${error.message}`, '#f44747');
+                return;
+            }
+            if (stderr) {
+                addTerminalOutput(stderr, '#ce9178');
+            }
+            if (stdout) {
+                addTerminalOutput(stdout, '#d4d4d4');
+            }
+            if (!stdout && !stderr) {
+                addTerminalOutput('[Command executed successfully]', '#6a9955');
+            }
+        });
+    } catch (err) {
+        addTerminalOutput(`Failed to execute: ${err.message}`, '#f44747');
+    }
+}
+
+// 监听终端输入
+if (terminalInput) {
+    terminalInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const command = terminalInput.value;
+            executeCommand(command);
+            terminalInput.value = '';
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (historyIndex > 0) {
+                historyIndex--;
+                terminalInput.value = commandHistory[historyIndex] || '';
+            }
+        } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (historyIndex < commandHistory.length - 1) {
+                historyIndex++;
+                terminalInput.value = commandHistory[historyIndex] || '';
+            } else {
+                historyIndex = commandHistory.length;
+                terminalInput.value = '';
+            }
+        }
     });
 }

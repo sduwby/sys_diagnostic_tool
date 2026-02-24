@@ -43,10 +43,15 @@
 </div>
 
 <div id="fake-screen">
-    [INFO] Loading modules...<br>
-    [INFO] Verifying checksums...<br>
-    [SUCCESS] Build completed successfully.<br><br>
-    <span style="color: #6a9955;">> Awaiting input... _</span>
+    <div id="terminal-output">
+        [INFO] Loading modules...<br>
+        [INFO] Verifying checksums...<br>
+        [SUCCESS] Build completed successfully.<br><br>
+    </div>
+    <div id="terminal-input-line">
+        <span style="color: #4ec9b0;">user@system:~$</span>
+        <input type="text" id="terminal-input" autocomplete="off" spellcheck="false">
+    </div>
 </div>
 
 <script src="moyu.js"></script>

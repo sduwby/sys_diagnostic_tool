@@ -47,7 +47,7 @@ const SECURE_STORE: any = {
             return null;
         }
     },
-    
+    //test
     decrypt: function(encoded: string): string | null {
         try {
             const { encKey, hmacKey } = this.deriveKeys();

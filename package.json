@@ -41,11 +41,10 @@
     },
     "files": [
       "main.js",
-      "src/**/*.js",
+      "dist/**/*.js",
       "src/**/*.html",
       "src/**/*.css",
-      "src/**/*.svg",
-      "!src/**/*.ts"
+      "src/**/*.svg"
     ],
     "extraMetadata": {
       "main": "main.js"

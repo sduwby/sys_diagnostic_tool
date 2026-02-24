@@ -1,35 +1,11 @@
-// --- 加密与存储 ---
-const SECURE_STORE = {
-    key: 'SYS_DIAG_2026',
-    encrypt: function(text) {
-        let result = '';
-        for (let i = 0; i < text.length; i++) {
-            result += String.fromCharCode(text.charCodeAt(i) ^ this.key.charCodeAt(i % this.key.length));
-        }
-        return btoa(result);
-    },
-    decrypt: function(encoded) {
-        try {
-            let text = atob(encoded);
-            let result = '';
-            for (let i = 0; i < text.length; i++) {
-                result += String.fromCharCode(text.charCodeAt(i) ^ this.key.charCodeAt(i % this.key.length));
-            }
-            return result;
-        } catch (e) {
-            return null;
-        }
-    },
-    save: function(data) {
-        localStorage.setItem('sys_diag_logs', this.encrypt(JSON.stringify(data)));
-    },
-    load: function() {
-        const raw = localStorage.getItem('sys_diag_logs');
-        if (!raw) return [];
-        const str = this.decrypt(raw);
-        return str ? JSON.parse(str) : [];
-    }
-};
+// --- 导入模块 ---
+const { SECURE_STORE, CUSTOM_SNIPPETS_STORE, ACHIEVEMENT_STORE } = require('./storage.js');
+const { ACHIEVEMENTS } = require('./achievements.js');
+require('./analytics.js'); // Analytics 函数挂载到 window
+require('./achievementUI.js'); // Achievement UI 函数挂载到 window
+
+// 加载成就数据
+let achievementData = ACHIEVEMENT_STORE.load();
 
 // --- 游戏配置 ---
 const LANG_CONFIG = [
@@ -39,6 +15,19 @@ const LANG_CONFIG = [
     { name: 'Go', score: 2.5, speedBonus: 1.075, colorClass: 'c-go', snippets: ['func main()', 'fmt.Println', 'go func()', 'if err != nil'] },
     { name: 'Py', score: 3.0, speedBonus: 1.100, colorClass: 'c-py', snippets: ['def init():', 'import sys', 'print(f"{x}")', 'if __name__'] }
 ];
+
+// 自定义代码库配置
+const CUSTOM_LANG = { 
+    name: 'Custom', 
+    score: 1.5, 
+    speedBonus: 1.000, 
+    colorClass: 'c-custom', 
+    snippets: [] 
+};
+
+// 加载自定义代码片段
+let customSnippets = CUSTOM_SNIPPETS_STORE.load();
+CUSTOM_LANG.snippets = customSnippets;
 
 const container = document.getElementById('game-container');
 const scoreElement = document.getElementById('score');
@@ -81,7 +70,13 @@ const getMaxMisses = (lv) => 10 + (lv - 1) * 5;
 function createSnippet() {
     if (isBossMode || isGameOver) return;
 
-    const langData = LANG_CONFIG[Math.floor(Math.random() * LANG_CONFIG.length)];
+    // 混合使用内置和自定义代码片段
+    let availableConfigs = [...LANG_CONFIG];
+    if (CUSTOM_LANG.snippets.length > 0) {
+        availableConfigs.push(CUSTOM_LANG);
+    }
+    
+    const langData = availableConfigs[Math.floor(Math.random() * availableConfigs.length)];
     const text = langData.snippets[Math.floor(Math.random() * langData.snippets.length)];
     const div = document.createElement('div');
     div.className = `code-line ${langData.colorClass}`;
@@ -101,6 +96,7 @@ function createSnippet() {
     // 点击模式
     if (interactionMode === 'click') {
         div.onclick = (e) => {
+            trackClick(); // 追踪点击
             addScore(langData.score, e.clientX, e.clientY);
             div.remove();
         };
@@ -240,6 +236,7 @@ if (typingInput) {
             // 必须是唯一匹配
             if (matchedSnippets.length === 1) {
                 const matched = matchedSnippets[0];
+                trackClick(); // 追踪键盘匹配（也算作点击）
                 // 计算得分（根据语言配置）
                 const className = matched.className;
                 let score = 1.0;
@@ -273,6 +270,7 @@ window.addEventListener('keydown', (e) => {
 
     // Boss 键
     if (e.key === 'Escape' && !isGameOver) {
+        trackBossKey(); // 追踪 Boss 键按下
         isBossMode = !isBossMode;
         if (isBossMode) {
             mainUI.classList.add('hidden');
@@ -284,6 +282,7 @@ window.addEventListener('keydown', (e) => {
                 if (terminalInput) terminalInput.focus();
             }, 100);
         } else {
+            trackBossKeyRelease(); // 追踪 Boss 键释放（计算反应时间）
             mainUI.classList.remove('hidden');
             fakeScreen.style.display = 'none';
         }
@@ -298,6 +297,7 @@ window.addEventListener('keydown', (e) => {
 
     // --- 作弊码检测 ---
     if (e.key.length === 1) { // 只记录单字符
+        trackKeyPress(); // 追踪键盘按键（用于检测高并发）
         inputBuffer += e.key.toLowerCase();
         if (inputBuffer.length > 50) inputBuffer = inputBuffer.slice(-50); // 限制缓冲区
 
@@ -334,6 +334,16 @@ window.addEventListener('keydown', (e) => {
             }, 60000);
             inputBuffer = '';
         }
+        
+        // Cheat 3: coffee (Kernel Inject 成就)
+        if (inputBuffer.endsWith('coffee')) {
+            achievementData.stats.coffeeCode = true;
+            ACHIEVEMENT_STORE.save(achievementData);
+            checkAndUnlockAchievement('kernel_inject', true);
+            activateCheat('KERNEL PATCH: PERFORMANCE BOOST');
+            globalSpeedMultiplier *= 0.8; // 降低速度20%
+            inputBuffer = '';
+        }
     }
 });
 
@@ -353,6 +363,7 @@ function showCheatMsg(text) {
 // --- 排行榜相关 (保持不变) ---
 function triggerGameOver() {
     isGameOver = true;
+    onGameEnd(seconds); // 调用成就系统钩子
     gameOverScreen.style.display = 'block';
     document.getElementById('current-result').innerHTML = `
         <div>Processed: <span style="color:#fff">${currentScore.toFixed(1)}</span> objects</div>
@@ -379,6 +390,14 @@ window.submitScore = function() {
     scores.sort((a, b) => b.score - a.score || a.timestamp - b.timestamp);
     if (scores.length > 10) scores.length = 10;
     SECURE_STORE.save(scores);
+    
+    // 标记首次数据保存
+    if (!achievementData.stats.firstDataSave) {
+        achievementData.stats.firstDataSave = true;
+        ACHIEVEMENT_STORE.save(achievementData);
+        checkAndUnlockAchievement('persistence', true);
+    }
+    
     document.getElementById('input-area').classList.add('hidden');
     renderLeaderboard(scores);
 };
@@ -425,6 +444,135 @@ window.exportScores = function(format = 'json') {
     a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
+};
+
+// --- 自定义代码库管理 ---
+const settingsBtn = document.getElementById('settings-btn');
+const settingsPanel = document.getElementById('settings-panel');
+
+settingsBtn.addEventListener('click', () => {
+    settingsPanel.style.display = 'block';
+    renderCustomSnippetsList();
+});
+
+window.closeSettings = function() {
+    settingsPanel.style.display = 'none';
+};
+
+window.addCustomSnippet = function() {
+    const input = document.getElementById('new-snippet-input');
+    const text = input.value.trim();
+    
+    if (!text) {
+        alert('Please enter a code snippet.');
+        return;
+    }
+    
+    if (text.length < 3) {
+        alert('Snippet must be at least 3 characters long.');
+        return;
+    }
+    
+    if (CUSTOM_LANG.snippets.includes(text)) {
+        alert('This snippet already exists.');
+        return;
+    }
+    
+    CUSTOM_LANG.snippets.push(text);
+    CUSTOM_SNIPPETS_STORE.save(CUSTOM_LANG.snippets);
+    input.value = '';
+    renderCustomSnippetsList();
+    
+    // 标记设置已保存
+    if (!achievementData.stats.settingsSaved) {
+        achievementData.stats.settingsSaved = true;
+        ACHIEVEMENT_STORE.save(achievementData);
+        checkAndUnlockAchievement('config_sync', true);
+    }
+};
+
+function removeCustomSnippet(index) {
+    CUSTOM_LANG.snippets.splice(index, 1);
+    CUSTOM_SNIPPETS_STORE.save(CUSTOM_LANG.snippets);
+    renderCustomSnippetsList();
+}
+
+function renderCustomSnippetsList() {
+    const list = document.getElementById('custom-snippets-list');
+    const emptyHint = document.getElementById('empty-hint');
+    
+    if (CUSTOM_LANG.snippets.length === 0) {
+        emptyHint.style.display = 'block';
+        list.innerHTML = '<div style="color: #888; font-size: 12px; font-style: italic;" id="empty-hint">No custom snippets yet.</div>';
+        return;
+    }
+    
+    emptyHint.style.display = 'none';
+    list.innerHTML = CUSTOM_LANG.snippets.map((snippet, index) => `
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #3e3e42;">
+            <code style="color: #d4d4d4; flex: 1;">${snippet}</code>
+            <button onclick="removeCustomSnippet(${index})" style="background: #f44747; color: #fff; border: none; padding: 4px 8px; cursor: pointer; border-radius: 2px;">✕</button>
+        </div>
+    `).join('');
+}
+
+window.removeCustomSnippet = removeCustomSnippet;
+
+window.exportCustomSnippets = function() {
+    if (CUSTOM_LANG.snippets.length === 0) {
+        alert('No custom snippets to export.');
+        return;
+    }
+    
+    const content = JSON.stringify(CUSTOM_LANG.snippets, null, 2);
+    const blob = new Blob([content], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `custom_snippets_${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+};
+
+window.importSnippets = function() {
+    const fileInput = document.getElementById('import-file-input');
+    fileInput.click();
+    
+    fileInput.onchange = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            try {
+                const imported = JSON.parse(event.target.result);
+                if (!Array.isArray(imported)) {
+                    alert('Invalid format. Expected JSON array.');
+                    return;
+                }
+                
+                let added = 0;
+                imported.forEach(snippet => {
+                    if (typeof snippet === 'string' && snippet.length >= 3 && !CUSTOM_LANG.snippets.includes(snippet)) {
+                        CUSTOM_LANG.snippets.push(snippet);
+                        added++;
+                    }
+                });
+                
+                if (added > 0) {
+                    CUSTOM_SNIPPETS_STORE.save(CUSTOM_LANG.snippets);
+                    renderCustomSnippetsList();
+                    alert(`Successfully imported ${added} snippet(s).`);
+                } else {
+                    alert('No new snippets were imported.');
+                }
+            } catch (e) {
+                alert('Failed to parse JSON file.');
+            }
+        };
+        reader.readAsText(file);
+        fileInput.value = '';
+    };
 };
 
 // --- 命令行功能 ---
@@ -549,3 +697,214 @@ if (terminalInput) {
         }
     });
 }
+
+
+
+// --- 成就系统核心函数 ---
+let sessionStartTime = Date.now();
+let keyPressTimestamps = [];
+let bossKeyPressTime = null;
+
+// 初始化成就
+function initAchievements() {
+    ACHIEVEMENTS.forEach(achievement => {
+        if (!achievementData.achievements[achievement.id]) {
+            achievementData.achievements[achievement.id] = {
+                id: achievement.id,
+                name: achievement.name,
+                tier: achievement.tier,
+                description: achievement.description,
+                unlocked: false,
+                unlockedAt: null,
+                progress: 0
+            };
+        }
+    });
+    
+    // 首次启动自动解锁 Env Ready
+    checkAndUnlockAchievement('env_ready');
+}
+
+// 检测并解锁成就
+function checkAndUnlockAchievement(achievementId, showNotification = true) {
+    const achievement = ACHIEVEMENTS.find(a => a.id === achievementId);
+    if (!achievement) return;
+    
+    const achievementState = achievementData.achievements[achievementId];
+    if (achievementState.unlocked) return; // 已解锁
+    
+    const isUnlocked = achievement.check(achievementData.stats, achievementData.achievements);
+    
+    if (isUnlocked) {
+        achievementState.unlocked = true;
+        achievementState.unlockedAt = new Date().toISOString();
+        achievementState.progress = achievement.requirement || 100;
+        
+        ACHIEVEMENT_STORE.save(achievementData);
+        
+        if (showNotification) {
+            showAchievementNotification(achievement);
+        }
+        
+        // 检查是否解锁了 Final Build
+        checkAndUnlockAchievement('final_build', true);
+    }
+}
+
+// 批量检测成就
+function checkAchievements() {
+    ACHIEVEMENTS.forEach(achievement => {
+        if (achievement.id !== 'env_ready') {
+            checkAndUnlockAchievement(achievement.id, true);
+        }
+    });
+    
+    // 更新进度
+    ACHIEVEMENTS.forEach(achievement => {
+        const achievementState = achievementData.achievements[achievement.id];
+        if (!achievementState.unlocked && achievement.current) {
+            achievementState.progress = achievement.current(achievementData.stats);
+        }
+    });
+}
+
+// 成就解锁通知
+function showAchievementNotification(achievement) {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        background: linear-gradient(135deg, #4ec9b0 0%, #3aa38f 100%);
+        color: #fff;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(78, 201, 176, 0.4);
+        font-family: 'Consolas', monospace;
+        font-size: 13px;
+        z-index: 10000;
+        animation: slideIn 0.3s ease-out;
+        max-width: 300px;
+    `;
+    
+    const tierNames = ['', 'Entry Level', 'Senior Dev', 'Tech Lead', 'Chief Architect'];
+    
+    notification.innerHTML = `
+        <div style="font-weight: bold; margin-bottom: 5px; font-size: 14px;">
+            🏆 Achievement Unlocked
+        </div>
+        <div style="font-size: 12px; opacity: 0.9; margin-bottom: 3px;">
+            [${tierNames[achievement.tier]}] ${achievement.name}
+        </div>
+        <div style="font-size: 11px; opacity: 0.7;">
+            ${achievement.description}
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// 统计追踪函数
+function trackClick() {
+    achievementData.stats.totalClicks++;
+    checkAndUnlockAchievement('unit_pass', true);
+    checkAndUnlockAchievement('big_data', true);
+}
+
+function trackKeyPress() {
+    const now = Date.now();
+    keyPressTimestamps.push(now);
+    
+    // 保留最近1秒的按键
+    keyPressTimestamps = keyPressTimestamps.filter(t => now - t < 1000);
+    
+    if (keyPressTimestamps.length > achievementData.stats.maxConcurrentKeys) {
+        achievementData.stats.maxConcurrentKeys = keyPressTimestamps.length;
+        checkAndUnlockAchievement('high_concurrency', true);
+    }
+}
+
+function trackBossKey() {
+    if (!achievementData.stats.bossKeyUsed) {
+        achievementData.stats.bossKeyUsed = true;
+        checkAndUnlockAchievement('hotfix', true);
+    }
+    
+    // 记录 Boss 键按下时间（用于计算反应速度）
+    bossKeyPressTime = Date.now();
+}
+
+function trackBossKeyRelease() {
+    if (bossKeyPressTime) {
+        const responseTime = Date.now() - bossKeyPressTime;
+        if (responseTime < achievementData.stats.fastestBossKeyResponse) {
+            achievementData.stats.fastestBossKeyResponse = responseTime;
+            checkAndUnlockAchievement('zero_latency', true);
+        }
+        bossKeyPressTime = null;
+    }
+}
+
+// 周五下午检测
+function checkFridayAfternoon() {
+    const now = new Date();
+    if (now.getDay() === 5 && now.getHours() >= 16) {
+        achievementData.stats.fridayAfternoon = true;
+        checkAndUnlockAchievement('friday_warrior', true);
+    }
+}
+
+// 游戏结束钩子
+function onGameEnd(completionTime) {
+    achievementData.stats.sessionsCompleted++;
+    
+    // Agile Sprint: 10分钟内完成
+    if (completionTime <= 600) {
+        achievementData.stats.fastGameCompletion = true;
+        checkAndUnlockAchievement('agile_sprint', true);
+    }
+    
+    // Stress Test: 持续1分钟不中断
+    if (completionTime >= 60 && missedCount === 0) {
+        achievementData.stats.longSession = true;
+        checkAndUnlockAchievement('stress_test', true);
+    }
+    
+    // 保存统计数据
+    ACHIEVEMENT_STORE.save(achievementData);
+}
+
+// 运行时统计更新（每秒）
+setInterval(() => {
+    if (!isBossMode && !isGameOver) {
+        achievementData.stats.totalRuntime++;
+        
+        checkAndUnlockAchievement('heartbeat', true);
+        checkAndUnlockAchievement('high_availability', true);
+        checkAndUnlockAchievement('five_nines', true);
+        
+        checkFridayAfternoon();
+    }
+}, 1000);
+
+// 窗口可见性变化检测（用于 Full Stack）
+let visibilityHidden = false;
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden && !visibilityHidden) {
+        visibilityHidden = true;
+    } else if (!document.hidden && visibilityHidden) {
+        achievementData.stats.tabSwitchCount++;
+        checkAndUnlockAchievement('full_stack', true);
+        visibilityHidden = false;
+    }
+});
+
+// 初始化
+initAchievements();
+checkFridayAfternoon();
+
+

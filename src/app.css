@@ -64,11 +64,34 @@ body {
     }
 }
 
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
 .c-ts { color: #f1e05a; }
 .c-cpp { color: #ce9178; }
 .c-java { color: #b07219; }
 .c-go { color: #00ADD8; }
 .c-py { color: #3572A5; }
+.c-custom { color: #ff79c6; }
 .green { color: #6a9955; }
 .red { color: #f44747; font-weight: bold; }
 .blue { color: #569cd6; }

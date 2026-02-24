@@ -1,7 +1,7 @@
 {
-  "name": "moyu-game",
+  "name": "sys-diagnostic-tool",
   "version": "1.0.0",
-  "description": "System Diagnostic Tool - 摸鱼打字游戏",
+  "description": "Professional system diagnostic and typing accuracy analyzer",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -18,7 +18,7 @@
     "build:linux:arm64": "electron-builder --linux --arm64",
     "build": "electron-builder --win --mac --linux"
   },
-  "keywords": ["game", "typing", "electron"],
+  "keywords": ["diagnostic", "typing", "analyzer", "electron"],
   "author": "",
   "license": "MIT",
   "devDependencies": {
@@ -26,7 +26,7 @@
     "electron-builder": "^24.9.1"
   },
   "build": {
-    "appId": "com.moyu.game",
+    "appId": "com.sysdiag.tool",
     "productName": "System Diagnostic Tool",
     "directories": {
       "output": "dist"

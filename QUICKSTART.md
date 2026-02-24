@@ -53,22 +53,22 @@ npm run build
 
 ---
 
-## 完整流程示例
+## Complete Process Example
 
 ```bash
-# 克隆或进入项目目录
-cd moyu
+# Clone or enter project directory
+cd sys-diagnostic-tool
 
-# 安装依赖
+# Install dependencies
 npm install
 
-# 测试运行（可选但推荐）
+# Test run (optional but recommended)
 npm start
 
-# 打包成exe
+# Build executables
 npm run build
 
-# 查看生成的文件
+# View generated files
 ls dist/
 ```
 

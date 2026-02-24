@@ -2,8 +2,10 @@
 
 let comboCount = 0;
 let lastHitTime = 0;
-const COMBO_TIMEOUT = 2000; // 2秒内连击有效
+const COMBO_TIMEOUT_CLICK = 500; // 鼠标点击：0.5秒
+const COMBO_TIMEOUT_TYPE = 1000; // 键盘输入：1秒
 let comboResetTimer = null;
+let currentMode = 'click'; // 当前交互模式
 
 // 初始化连击显示元素
 function initComboDisplay() {
@@ -26,12 +28,19 @@ function initComboDisplay() {
     document.body.appendChild(comboDiv);
 }
 
+// 设置交互模式（用于动态超时时间）
+function setInteractionMode(mode) {
+    currentMode = mode;
+}
+
 // 增加连击
-function addCombo() {
+function addCombo(mode = null) {
     const now = Date.now();
+    const interactionMode = mode || currentMode;
+    const timeout = interactionMode === 'click' ? COMBO_TIMEOUT_CLICK : COMBO_TIMEOUT_TYPE;
     
-    // 如果距离上次击中超过2秒，重置连击
-    if (now - lastHitTime > COMBO_TIMEOUT) {
+    // 如果距离上次击中超过超时时间，重置连击
+    if (now - lastHitTime > timeout) {
         comboCount = 0;
     }
     
@@ -49,7 +58,7 @@ function addCombo() {
     }
     comboResetTimer = setTimeout(() => {
         resetCombo();
-    }, COMBO_TIMEOUT);
+    }, timeout);
     
     return comboCount;
 }
@@ -113,10 +122,23 @@ function forceResetCombo() {
     }
 }
 
+// 溢出时重置连击（missed时调用）
+function onMissed() {
+    resetCombo();
+    comboCount = 0;
+    lastHitTime = 0;
+    if (comboResetTimer) {
+        clearTimeout(comboResetTimer);
+        comboResetTimer = null;
+    }
+}
+
 module.exports = {
     initComboDisplay,
     addCombo,
     resetCombo,
     getComboCount,
-    forceResetCombo
+    forceResetCombo,
+    setInteractionMode,
+    onMissed
 };

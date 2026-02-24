@@ -1,7 +1,7 @@
 // --- 导入模块 ---
 const { SECURE_STORE, CUSTOM_SNIPPETS_STORE, ACHIEVEMENT_STORE } = require('./storage.js');
 const { ACHIEVEMENTS } = require('./achievements.js');
-const { initComboDisplay, addCombo, forceResetCombo, getComboCount } = require('./combo.js');
+const { initComboDisplay, addCombo, forceResetCombo, getComboCount, setInteractionMode, onMissed } = require('./combo.js');
 const { initPracticeModeUI, isInPracticeMode, filterLanguageConfig } = require('./practiceMode.js');
 const { saveGameProgress, showRestorePrompt, deleteSaveData } = require('./gameState.js');
 require('./analytics.js'); // Analytics 函数挂载到 window
@@ -135,6 +135,7 @@ function createSnippet() {
         // --- 正常销毁逻辑 ---
         if (y < 40 && !cheatWallActive) { // Wall 模式下不销毁
             missedCount++;
+            onMissed(); // 溢出时重置连击
             div.remove();
         } else if (!cheatWallActive || y > 40) { // 如果没激活作弊，或者虽然激活但还没到顶，继续动画
             requestAnimationFrame(move);
@@ -204,6 +205,7 @@ gameLoop();
 modeToggleBtn.addEventListener('click', () => {
     interactionMode = interactionMode === 'click' ? 'type' : 'click';
     modeText.innerText = interactionMode === 'click' ? 'Click' : 'Type';
+    setInteractionMode(interactionMode); // 同步连击系统的模式
     
     if (interactionMode === 'type') {
         typingInputArea.style.display = 'block';

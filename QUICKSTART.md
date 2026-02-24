@@ -57,7 +57,7 @@ npm run build
 
 ```bash
 # Clone or enter project directory
-cd sys-diagnostic-tool
+cd sys_diagnostic_tool
 
 # Install dependencies
 npm install

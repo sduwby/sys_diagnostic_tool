@@ -13,7 +13,7 @@ Supports packaging for Windows, macOS, and Linux platforms.
 ## Project Structure
 
 ```text
-sys-diagnostic-tool/
+sys_diagnostic_tool/
 ├── package.json          # Project configuration
 ├── main.js               # Electron main process
 ├── src/

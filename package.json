@@ -1,5 +1,5 @@
 {
-  "name": "sys-diagnostic-tool",
+  "name": "sys_diagnostic_tool",
   "version": "1.0.0",
   "description": "Professional system diagnostic and typing accuracy analyzer",
   "main": "main.js",

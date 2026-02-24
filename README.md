@@ -1,5 +1,7 @@
 # System Diagnostic Tool
 
+[简体中文](./README.zh-CN.md) | [繁體中文](./README.zh-TW.md) | [English](./README.md) | [Русский](./README.ru.md) | [Français](./README.fr.md)
+
 A professional typing accuracy analyzer and performance diagnostic application.  
 Supports packaging for Windows, macOS, and Linux platforms.
 
@@ -113,10 +115,11 @@ npm run build
 
 ## Notes
 
-- Leaderboard data stored in local `localStorage`
-- Data is encrypted for basic security
+- Leaderboard data stored in encrypted file `~/.sys_diagnostic_data`
+- Data protected by AES-256-GCM + HMAC-SHA256 encryption
+- Custom snippets and achievements also encrypted and stored locally
 - Recommend testing locally before distribution
-- **Icon files required**: Place `icon.ico`, `icon.icns`, and `icon.png` in `src/` directory before building
+- Uses `src/icon.svg` for cross-platform icon generation
 
 ## Tips
 

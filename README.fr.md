@@ -20,12 +20,13 @@ sys_diagnostic_tool/
 ├── main.js               # Processus principal Electron
 ├── src/
 │   ├── index.html        # Interface principale
-│   ├── app.js            # Logique de l'application
+│   ├── app.js            # Logique de jeu principale (911 lignes)
 │   ├── app.css           # Styles
-│   ├── storage.js        # Module de stockage chiffré
-│   ├── achievements.js   # Système de succès
-│   ├── analytics.js      # Analyse de données
-│   └── achievementUI.js  # UI des succès
+│   ├── storage.js        # Chiffrement AES-256-GCM et persistance des données
+│   ├── achievements.js   # Définitions de 18 niveaux de succès
+│   ├── analytics.js      # Graphiques Canvas et analyse statistique
+│   ├── achievementUI.js  # Rendu du panneau de succès
+│   └── icon.svg          # Icône de l'application (multiplateforme)
 └── dist/                 # Sortie de build (auto-généré)
 ```
 

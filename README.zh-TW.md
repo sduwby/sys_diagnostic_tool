@@ -20,12 +20,13 @@ sys_diagnostic_tool/
 ├── main.js               # Electron 主處理程序
 ├── src/
 │   ├── index.html        # 主介面
-│   ├── app.js            # 應用邏輯
+│   ├── app.js            # 核心遊戲邏輯 (911行)
 │   ├── app.css           # 樣式
-│   ├── storage.js        # 加密儲存模組
-│   ├── achievements.js   # 成就系統
-│   ├── analytics.js      # 資料分析
-│   └── achievementUI.js  # 成就UI
+│   ├── storage.js        # AES-256-GCM 加密與資料持久化
+│   ├── achievements.js   # 18層成就定義
+│   ├── analytics.js      # Canvas 圖表與統計分析
+│   ├── achievementUI.js  # 成就面板渲染
+│   └── icon.svg          # 應用圖示（跨平台）
 └── dist/                 # 構建輸出（自動生成）
 ```
 

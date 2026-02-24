@@ -20,10 +20,13 @@ sys_diagnostic_tool/
 ├── main.js               # Electron main process
 ├── src/
 │   ├── index.html        # Main interface
-│   ├── app.js            # Application logic
+│   ├── app.js            # Core game logic (911 lines)
 │   ├── app.css           # Styling
-│   ├── Compiler.html     # Code encryption utility
-│   └── Loader.html       # Encrypted code loader
+│   ├── storage.js        # AES-256-GCM encryption & data persistence
+│   ├── achievements.js   # 18-tier achievement definitions
+│   ├── analytics.js      # Canvas-based charts & statistics
+│   ├── achievementUI.js  # Achievement panel rendering
+│   └── icon.svg          # Application icon (cross-platform)
 └── dist/                 # Build output (auto-generated)
 ```
 

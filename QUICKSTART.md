@@ -122,7 +122,7 @@ A:
 A: 编辑 `main.js` 中的 `width` 和 `height`
 
 **Q: 想添加图标？**  
-A: 将对应格式的图标放在 `src/` 目录，重新打包
+A: 推荐使用 `icon.svg`（矢量格式），放在 `src/` 目录，electron-builder 会自动转换为各平台格式，然后重新打包
 
 ---
 

@@ -205,12 +205,14 @@ dist/
 ### 5. 想要自定义图标
 
 **步骤**：
-1. 准备图标文件：
+1. 准备 SVG 格式图标文件（推荐）或准备各平台格式：
+   - 推荐: `icon.svg` (矢量格式，electron-builder 自动转换)
    - Windows: `icon.ico` (256x256像素)
    - macOS: `icon.icns` (512x512像素)
    - Linux: `icon.png` (512x512像素)
 2. 将图标文件放在`src/`目录
-3. 重新打包
+3. 更新 `package.json` 中的图标路径（如使用 SVG，所有平台设为 `"icon": "src/icon.svg"`）
+4. 重新打包
 
 ### 6. 在非Mac系统上打包Mac应用
 
@@ -255,21 +257,22 @@ mainWindow = new BrowserWindow({
 
 ### 添加应用图标
 
-1. 准备图标文件：
-   - Windows: `icon.ico` (256x256)
-   - Mac: `icon.icns`
-   - Linux: `icon.png` (512x512)
+1. 准备 SVG 图标文件（推荐）：
+   - 创建或下载 `icon.svg` 文件（矢量格式）
+   - electron-builder 24.x+ 支持自动转换为各平台格式
 
 2. 放置在`src/`目录
 
-3. 更新`package.json`：
+3. 更新`package.json`（如使用 SVG）：
    ```json
    "build": {
-     "win": {
-       "icon": "src/icon.ico"
-     }
+     "win": { "icon": "src/icon.svg" },
+     "mac": { "icon": "src/icon.svg" },
+     "linux": { "icon": "src/icon.svg" }
    }
    ```
+
+**注意**: 也可以使用平台特定格式（.ico/.icns/.png），但 SVG 更简便
 
 ## 分发建议
 

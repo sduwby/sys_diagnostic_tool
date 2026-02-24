@@ -1,10 +1,10 @@
 // --- 加密与文件存储 (AES-256-GCM + HMAC) ---
-const fs = require('fs');
-const path = require('path');
-const os = require('os');
-const crypto = require('crypto');
+import * as fs from 'fs';
+import * as path from 'path';
+import * as os from 'os';
+import * as crypto from 'crypto';
 
-const SECURE_STORE = {
+const SECURE_STORE: any = {
     // 使用固定密钥派生（生产环境建议使用更安全的密钥管理）
     masterKey: 'SYS_DIAG_2026_MASTER_SECRET_KEY_V1',
     filePath: path.join(os.homedir(), '.sys_diagnostic_data'),
@@ -16,7 +16,7 @@ const SECURE_STORE = {
         return { encKey, hmacKey };
     },
     
-    encrypt: function(text) {
+    encrypt: function(text: string): string | null {
         try {
             const { encKey, hmacKey } = this.deriveKeys();
             
@@ -48,7 +48,7 @@ const SECURE_STORE = {
         }
     },
     
-    decrypt: function(encoded) {
+    decrypt: function(encoded: string): string | null {
         try {
             const { encKey, hmacKey } = this.deriveKeys();
             
@@ -88,7 +88,7 @@ const SECURE_STORE = {
         }
     },
     
-    save: function(data) {
+    save: function(data: any): void {
         try {
             const encrypted = this.encrypt(JSON.stringify(data));
             if (encrypted) {
@@ -99,7 +99,7 @@ const SECURE_STORE = {
         }
     },
     
-    load: function() {
+    load: function(): any[] {
         try {
             if (!fs.existsSync(this.filePath)) {
                 return [];
@@ -115,10 +115,10 @@ const SECURE_STORE = {
 };
 
 // --- 自定义代码库存储 ---
-const CUSTOM_SNIPPETS_STORE = {
+const CUSTOM_SNIPPETS_STORE: any = {
     filePath: path.join(os.homedir(), '.sys_diagnostic_custom_snippets'),
     
-    save: function(snippets) {
+    save: function(snippets: string[]): void {
         try {
             const encrypted = SECURE_STORE.encrypt(JSON.stringify(snippets));
             if (encrypted) {
@@ -129,7 +129,7 @@ const CUSTOM_SNIPPETS_STORE = {
         }
     },
     
-    load: function() {
+    load: function(): string[] {
         try {
             if (!fs.existsSync(this.filePath)) {
                 return [];
@@ -145,10 +145,10 @@ const CUSTOM_SNIPPETS_STORE = {
 };
 
 // --- 成就系统存储 ---
-const ACHIEVEMENT_STORE = {
+const ACHIEVEMENT_STORE: any = {
     filePath: path.join(os.homedir(), '.sys_diagnostic_achievements'),
     
-    save: function(data) {
+    save: function(data: any): void {
         try {
             const encrypted = SECURE_STORE.encrypt(JSON.stringify(data));
             if (encrypted) {
@@ -159,7 +159,7 @@ const ACHIEVEMENT_STORE = {
         }
     },
     
-    load: function() {
+    load: function(): any {
         try {
             if (!fs.existsSync(this.filePath)) {
                 return this.createDefaultData();
@@ -173,7 +173,7 @@ const ACHIEVEMENT_STORE = {
         }
     },
     
-    createDefaultData: function() {
+    createDefaultData: function(): any {
         return {
             achievements: {},
             stats: {
@@ -191,4 +191,4 @@ const ACHIEVEMENT_STORE = {
     }
 };
 
-module.exports = { SECURE_STORE, CUSTOM_SNIPPETS_STORE, ACHIEVEMENT_STORE };
+export { SECURE_STORE, CUSTOM_SNIPPETS_STORE, ACHIEVEMENT_STORE };

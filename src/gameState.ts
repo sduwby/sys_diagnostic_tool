@@ -1,13 +1,13 @@
 // --- 游戏进度保存/恢复模块 ---
-const { SECURE_STORE } = require('./storage.js');
-const path = require('path');
-const os = require('os');
-const fs = require('fs');
+import { SECURE_STORE } from './storage';
+import * as path from 'path';
+import * as os from 'os';
+import * as fs from 'fs';
 
 const GAME_STATE_FILE = path.join(os.homedir(), '.sys_diagnostic_progress');
 
 // 保存游戏状态
-function saveGameProgress(gameData) {
+function saveGameProgress(gameData: any): boolean {
     try {
         const state = {
             score: gameData.currentScore,
@@ -34,7 +34,7 @@ function saveGameProgress(gameData) {
 }
 
 // 加载游戏状态
-function loadGameProgress() {
+function loadGameProgress(): any | null {
     try {
         if (!fs.existsSync(GAME_STATE_FILE)) {
             return null;
@@ -68,7 +68,7 @@ function loadGameProgress() {
 }
 
 // 删除存档
-function deleteSaveData() {
+function deleteSaveData(): boolean {
     try {
         if (fs.existsSync(GAME_STATE_FILE)) {
             fs.unlinkSync(GAME_STATE_FILE);
@@ -82,7 +82,7 @@ function deleteSaveData() {
 }
 
 // 检查是否有存档
-function hasSaveData() {
+function hasSaveData(): boolean {
     try {
         return fs.existsSync(GAME_STATE_FILE);
     } catch (e) {
@@ -91,7 +91,7 @@ function hasSaveData() {
 }
 
 // 显示恢复进度提示
-function showRestorePrompt(onRestore, onNewGame) {
+function showRestorePrompt(onRestore: Function, onNewGame: Function): void {
     const prompt = document.createElement('div');
     prompt.id = 'restore-prompt';
     prompt.style.cssText = `
@@ -135,19 +135,19 @@ function showRestorePrompt(onRestore, onNewGame) {
     
     document.body.appendChild(prompt);
     
-    document.getElementById('restore-btn').onclick = () => {
+    (document.getElementById('restore-btn') as HTMLButtonElement).onclick = () => {
         prompt.remove();
         onRestore(saveData);
     };
     
-    document.getElementById('new-game-btn').onclick = () => {
+    (document.getElementById('new-game-btn') as HTMLButtonElement).onclick = () => {
         prompt.remove();
         deleteSaveData();
         onNewGame();
     };
 }
 
-module.exports = {
+export {
     saveGameProgress,
     loadGameProgress,
     deleteSaveData,

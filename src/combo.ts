@@ -1,14 +1,14 @@
 // --- 连击系统模块 ---
 
-let comboCount = 0;
-let lastHitTime = 0;
+let comboCount: number = 0;
+let lastHitTime: number = 0;
 const COMBO_TIMEOUT_CLICK = 500; // 鼠标点击：0.5秒
 const COMBO_TIMEOUT_TYPE = 1000; // 键盘输入：1秒
-let comboResetTimer = null;
-let currentMode = 'click'; // 当前交互模式
+let comboResetTimer: any = null;
+let currentMode: string = 'click'; // 当前交互模式
 
 // 初始化连击显示元素
-function initComboDisplay() {
+function initComboDisplay(): void {
     const comboDiv = document.createElement('div');
     comboDiv.id = 'combo-display';
     comboDiv.style.cssText = `
@@ -29,12 +29,12 @@ function initComboDisplay() {
 }
 
 // 设置交互模式（用于动态超时时间）
-function setInteractionMode(mode) {
+function setInteractionMode(mode: string): void {
     currentMode = mode;
 }
 
 // 增加连击
-function addCombo(mode = null) {
+function addCombo(mode: string | null = null): number {
     const now = Date.now();
     const interactionMode = mode || currentMode;
     const timeout = interactionMode === 'click' ? COMBO_TIMEOUT_CLICK : COMBO_TIMEOUT_TYPE;
@@ -64,7 +64,7 @@ function addCombo(mode = null) {
 }
 
 // 显示连击特效
-function showCombo() {
+function showCombo(): void {
     const comboDiv = document.getElementById('combo-display');
     if (!comboDiv) return;
     
@@ -91,7 +91,7 @@ function showCombo() {
 }
 
 // 重置连击
-function resetCombo() {
+function resetCombo(): void {
     if (comboCount >= 3) {
         // 显示连击结束
         const comboDiv = document.getElementById('combo-display');
@@ -108,12 +108,12 @@ function resetCombo() {
 }
 
 // 获取当前连击数
-function getComboCount() {
+function getComboCount(): number {
     return comboCount;
 }
 
 // 强制重置连击（游戏结束时调用）
-function forceResetCombo() {
+function forceResetCombo(): void {
     comboCount = 0;
     lastHitTime = 0;
     if (comboResetTimer) {
@@ -123,7 +123,7 @@ function forceResetCombo() {
 }
 
 // 溢出时重置连击（missed时调用）
-function onMissed() {
+function onMissed(): void {
     resetCombo();
     comboCount = 0;
     lastHitTime = 0;
@@ -133,7 +133,7 @@ function onMissed() {
     }
 }
 
-module.exports = {
+export {
     initComboDisplay,
     addCombo,
     resetCombo,

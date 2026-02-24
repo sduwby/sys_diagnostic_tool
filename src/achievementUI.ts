@@ -1,8 +1,8 @@
 // --- 成就UI渲染模块 ---
-const { ACHIEVEMENT_STORE } = require('./storage.js');
-const { ACHIEVEMENTS } = require('./achievements.js');
+import { ACHIEVEMENT_STORE }  from './storage';
+import { ACHIEVEMENTS } from './achievements';
 
-window.openAchievements = function() {
+(window as any).openAchievements = function(): void {
     const panel = document.getElementById('achievements-panel');
     if (panel) {
         panel.style.display = 'block';
@@ -10,14 +10,14 @@ window.openAchievements = function() {
     }
 };
 
-window.closeAchievements = function() {
+(window as any).closeAchievements = function(): void {
     const panel = document.getElementById('achievements-panel');
     if (panel) {
         panel.style.display = 'none';
     }
 };
 
-function renderAchievements() {
+function renderAchievements(): void {
     const achievementData = ACHIEVEMENT_STORE.load();
     const container = document.getElementById('achievements-list');
     if (!container) return;
@@ -28,8 +28,8 @@ function renderAchievements() {
     let html = '';
     
     for (let tier = 1; tier <= 4; tier++) {
-        const tierAchievements = ACHIEVEMENTS.filter(a => a.tier === tier);
-        const unlockedCount = tierAchievements.filter(a => achievementData.achievements[a.id]?.unlocked).length;
+        const tierAchievements = ACHIEVEMENTS.filter((a: any) => a.tier === tier);
+        const unlockedCount = tierAchievements.filter((a: any) => achievementData.achievements[a.id]?.unlocked).length;
         
         html += `
             <div style="margin-bottom: 20px;">
@@ -38,7 +38,7 @@ function renderAchievements() {
                 </div>
         `;
         
-        tierAchievements.forEach(achievement => {
+        tierAchievements.forEach((achievement: any) => {
             const state = achievementData.achievements[achievement.id];
             const unlocked = state?.unlocked;
             const progress = state?.progress || 0;
@@ -81,4 +81,4 @@ function renderAchievements() {
     container.innerHTML = html;
 }
 
-module.exports = { renderAchievements };
+export { renderAchievements };

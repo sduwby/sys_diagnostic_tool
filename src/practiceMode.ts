@@ -1,15 +1,15 @@
 // --- 练习模式模块 ---
 
-let isPracticeMode = false;
-let practiceLanguage = null; // 'all' 或特定语言名称
+let isPracticeMode: boolean = false;
+let practiceLanguage: string | null = null; // 'all' 或特定语言名称
 
 // 初始化练习模式UI
-function initPracticeModeUI() {
+function initPracticeModeUI(): void {
     // 在 header 右侧添加练习模式切换按钮
     const header = document.getElementById('header');
     if (!header) return;
     
-    const buttonContainer = header.querySelector('div[style*="position: absolute"]');
+    const buttonContainer = header.querySelector('div[style*="position: absolute"]') as HTMLElement;
     if (buttonContainer) {
         const practiceModeBtn = document.createElement('button');
         practiceModeBtn.id = 'practice-mode-btn';
@@ -21,7 +21,7 @@ function initPracticeModeUI() {
 }
 
 // 切换练习模式
-function togglePracticeMode() {
+function togglePracticeMode(): void {
     if (!isPracticeMode) {
         showPracticeModeConfig();
     } else {
@@ -30,7 +30,7 @@ function togglePracticeMode() {
 }
 
 // 显示练习模式配置面板
-function showPracticeModeConfig() {
+function showPracticeModeConfig(): void {
     const panel = document.createElement('div');
     panel.id = 'practice-config-panel';
     panel.style.cssText = `
@@ -89,14 +89,14 @@ function showPracticeModeConfig() {
 }
 
 // 关闭配置面板
-window.closePracticeConfig = function() {
+(window as any).closePracticeConfig = function(): void {
     const panel = document.getElementById('practice-config-panel');
     if (panel) panel.remove();
 };
 
 // 开始练习模式
-window.startPracticeMode = function() {
-    const selected = document.querySelector('input[name="practice-lang"]:checked');
+(window as any).startPracticeMode = function(): void {
+    const selected = document.querySelector('input[name="practice-lang"]:checked') as HTMLInputElement;
     if (selected) {
         practiceLanguage = selected.value;
         isPracticeMode = true;
@@ -109,13 +109,13 @@ window.startPracticeMode = function() {
         }
         
         // 重启游戏
-        closePracticeConfig();
+        (window as any).closePracticeConfig();
         location.reload();
     }
 };
 
 // 退出练习模式
-function exitPracticeMode() {
+function exitPracticeMode(): void {
     isPracticeMode = false;
     practiceLanguage = null;
     
@@ -130,24 +130,24 @@ function exitPracticeMode() {
 }
 
 // 检查是否在练习模式
-function isInPracticeMode() {
+function isInPracticeMode(): boolean {
     return isPracticeMode;
 }
 
 // 获取练习语言
-function getPracticeLanguage() {
+function getPracticeLanguage(): string | null {
     return practiceLanguage;
 }
 
 // 过滤语言配置（用于练习模式）
-function filterLanguageConfig(langConfig) {
+function filterLanguageConfig(langConfig: any[]): any[] {
     if (!isPracticeMode || practiceLanguage === 'all') {
         return langConfig;
     }
     return langConfig.filter(lang => lang.name === practiceLanguage);
 }
 
-module.exports = {
+export {
     initPracticeModeUI,
     isInPracticeMode,
     getPracticeLanguage,

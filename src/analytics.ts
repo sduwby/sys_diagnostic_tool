@@ -1,9 +1,9 @@
 // --- 历史成绩分析模块 ---
-const { SECURE_STORE } = require('./storage.js');
+import { SECURE_STORE } from './storage';
 
-window.showAnalytics = function() {
+(window as any).showAnalytics = function(): void {
     const analyticsPanel = document.getElementById('analytics-panel');
-    analyticsPanel.style.display = 'block';
+    if (analyticsPanel) analyticsPanel.style.display = 'block';
     
     const scores = SECURE_STORE.load();
     if (scores.length === 0) {
@@ -11,26 +11,23 @@ window.showAnalytics = function() {
         return;
     }
     
-    // 渲染折线图
     renderTrendChart(scores);
-    
-    // 渲染饼图
     renderPieChart(scores);
-    
-    // 渲染统计摘要
     renderStatsSummary(scores);
 };
 
-window.closeAnalytics = function() {
-    document.getElementById('analytics-panel').style.display = 'none';
+(window as any).closeAnalytics = function(): void {
+    const panel = document.getElementById('analytics-panel');
+    if (panel) panel.style.display = 'none';
 };
 
-function renderTrendChart(scores) {
-    const canvas = document.getElementById('trend-chart');
+function renderTrendChart(scores: any[]): void {
+    const canvas = document.getElementById('trend-chart') as HTMLCanvasElement;
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
+    if (!ctx) return;
     const dpr = window.devicePixelRatio || 1;
     
-    // 设置实际尺寸
     canvas.width = canvas.clientWidth * dpr;
     canvas.height = canvas.clientHeight * dpr;
     ctx.scale(dpr, dpr);
@@ -38,10 +35,7 @@ function renderTrendChart(scores) {
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
     
-    // 清空画布
     ctx.clearRect(0, 0, width, height);
-    
-    // 设置样式
     ctx.strokeStyle = '#4ec9b0';
     ctx.fillStyle = '#d4d4d4';
     ctx.font = '10px Consolas, monospace';
@@ -50,15 +44,13 @@ function renderTrendChart(scores) {
     const chartWidth = width - padding * 2;
     const chartHeight = height - padding * 2;
     
-    // 取最近10条记录
     const data = scores.slice(0, 10).reverse();
     if (data.length === 0) return;
     
-    const maxScore = Math.max(...data.map(s => s.score));
-    const minScore = Math.min(...data.map(s => s.score));
+    const maxScore = Math.max(...data.map((s: any) => s.score));
+    const minScore = Math.min(...data.map((s: any) => s.score));
     const range = maxScore - minScore || 1;
     
-    // 绘制坐标轴
     ctx.strokeStyle = '#555';
     ctx.beginPath();
     ctx.moveTo(padding, padding);
@@ -66,22 +58,17 @@ function renderTrendChart(scores) {
     ctx.lineTo(width - padding, height - padding);
     ctx.stroke();
     
-    // 绘制折线
     ctx.strokeStyle = '#4ec9b0';
     ctx.lineWidth = 2;
     ctx.beginPath();
     
-    data.forEach((point, index) => {
+    data.forEach((point: any, index: number) => {
         const x = padding + (chartWidth / (data.length - 1 || 1)) * index;
         const y = height - padding - ((point.score - minScore) / range) * chartHeight;
         
-        if (index === 0) {
-            ctx.moveTo(x, y);
-        } else {
-            ctx.lineTo(x, y);
-        }
+        if (index === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
         
-        // 绘制数据点
         ctx.fillStyle = '#4ec9b0';
         ctx.beginPath();
         ctx.arc(x, y, 3, 0, Math.PI * 2);
@@ -90,23 +77,23 @@ function renderTrendChart(scores) {
     
     ctx.stroke();
     
-    // 绘制标签
     ctx.fillStyle = '#888';
     ctx.textAlign = 'center';
-    data.forEach((point, index) => {
+    data.forEach((_: any, index: number) => {
         const x = padding + (chartWidth / (data.length - 1 || 1)) * index;
-        ctx.fillText(`#${index + 1}`, x, height - padding + 15);
+        ctx.fillText(`${index + 1}`, x, height - padding + 15);
     });
     
-    // Y轴标签
     ctx.textAlign = 'right';
     ctx.fillText(maxScore.toFixed(0), padding - 5, padding + 5);
     ctx.fillText(minScore.toFixed(0), padding - 5, height - padding + 5);
 }
 
-function renderPieChart(scores) {
-    const canvas = document.getElementById('pie-chart');
+function renderPieChart(scores: any[]): void {
+    const canvas = document.getElementById('pie-chart') as HTMLCanvasElement;
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
+    if (!ctx) return;
     const dpr = window.devicePixelRatio || 1;
     
     canvas.width = canvas.clientWidth * dpr;
@@ -121,7 +108,6 @@ function renderPieChart(scores) {
     
     ctx.clearRect(0, 0, width, height);
     
-    // 分数分布区间
     const ranges = [
         { label: '0-50', min: 0, max: 50, color: '#6a9955' },
         { label: '50-100', min: 50, max: 100, color: '#4ec9b0' },
@@ -129,10 +115,9 @@ function renderPieChart(scores) {
         { label: '200+', min: 200, max: Infinity, color: '#ff79c6' }
     ];
     
-    // 统计分布
     const distribution = ranges.map(range => ({
         ...range,
-        count: scores.filter(s => s.score >= range.min && s.score < range.max).length
+        count: scores.filter((s: any) => s.score >= range.min && s.score < range.max).length
     }));
     
     const total = scores.length;
@@ -143,7 +128,6 @@ function renderPieChart(scores) {
         
         const angle = (segment.count / total) * Math.PI * 2;
         
-        // 绘制扇形
         ctx.fillStyle = segment.color;
         ctx.beginPath();
         ctx.moveTo(centerX, centerY);
@@ -151,12 +135,10 @@ function renderPieChart(scores) {
         ctx.closePath();
         ctx.fill();
         
-        // 绘制边框
         ctx.strokeStyle = '#1e1e1e';
         ctx.lineWidth = 2;
         ctx.stroke();
         
-        // 绘制标签
         const labelAngle = startAngle + angle / 2;
         const labelX = centerX + Math.cos(labelAngle) * (radius * 0.7);
         const labelY = centerY + Math.sin(labelAngle) * (radius * 0.7);
@@ -173,15 +155,15 @@ function renderPieChart(scores) {
     });
 }
 
-function renderStatsSummary(scores) {
+function renderStatsSummary(scores: any[]): void {
     const container = document.getElementById('stats-summary');
     if (!container) return;
     
-    const sortedScores = scores.map(s => s.score).sort((a, b) => b - a);
+    const sortedScores = scores.map((s: any) => s.score).sort((a: number, b: number) => b - a);
     const total = sortedScores.length;
     const max = sortedScores[0];
     const min = sortedScores[sortedScores.length - 1];
-    const avg = sortedScores.reduce((a, b) => a + b, 0) / total;
+    const avg = sortedScores.reduce((a: number, b: number) => a + b, 0) / total;
     const median = total % 2 === 0 
         ? (sortedScores[total / 2 - 1] + sortedScores[total / 2]) / 2 
         : sortedScores[Math.floor(total / 2)];
@@ -207,5 +189,3 @@ function renderStatsSummary(scores) {
         </div>
     `;
 }
-
-module.exports = { renderTrendChart, renderPieChart, renderStatsSummary };

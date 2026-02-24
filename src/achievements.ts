@@ -1,14 +1,14 @@
 // --- 成就定义与管理 ---
-const { ACHIEVEMENT_STORE } = require('./storage.js');
+import { ACHIEVEMENT_STORE } from './storage';
 
-const ACHIEVEMENTS = [
+const ACHIEVEMENTS: any[] = [
     // 第一梯队：初级工程师
     {
         id: 'env_ready',
         name: 'Env Ready',
         tier: 1,
         description: '成功挂载本地开发环境，依赖包加载完成',
-        check: (stats) => true,
+        check: (stats: any) => true,
         type: 'once'
     },
     {
@@ -16,9 +16,9 @@ const ACHIEVEMENTS = [
         name: 'Unit Pass',
         tier: 1,
         description: '基础逻辑校验成功，核心链路已调通',
-        check: (stats) => stats.totalClicks >= 100,
+        check: (stats: any) => stats.totalClicks >= 100,
         requirement: 100,
-        current: (stats) => stats.totalClicks,
+        current: (stats: any) => stats.totalClicks,
         type: 'count'
     },
     {
@@ -26,9 +26,9 @@ const ACHIEVEMENTS = [
         name: 'Heartbeat',
         tier: 1,
         description: '后台驻留进程活跃，服务监测无异常',
-        check: (stats) => stats.totalRuntime >= 300,
+        check: (stats: any) => stats.totalRuntime >= 300,
         requirement: 300,
-        current: (stats) => stats.totalRuntime,
+        current: (stats: any) => stats.totalRuntime,
         type: 'count'
     },
     {
@@ -36,7 +36,7 @@ const ACHIEVEMENTS = [
         name: 'Hotfix',
         tier: 1,
         description: '紧急响应线上回滚指令，阻止非预期中断',
-        check: (stats) => stats.bossKeyUsed,
+        check: (stats: any) => stats.bossKeyUsed,
         type: 'once'
     },
     {
@@ -44,7 +44,7 @@ const ACHIEVEMENTS = [
         name: 'Config Sync',
         tier: 1,
         description: '全局环境变量已更新，生产环境参数对齐',
-        check: (stats) => stats.settingsSaved,
+        check: (stats: any) => stats.settingsSaved,
         type: 'once'
     },
     
@@ -54,9 +54,9 @@ const ACHIEVEMENTS = [
         name: 'High Concurrency',
         tier: 2,
         description: '瞬时流量突破阈值，负载均衡逻辑生效',
-        check: (stats) => stats.maxConcurrentKeys >= 8,
+        check: (stats: any) => stats.maxConcurrentKeys >= 8,
         requirement: 8,
-        current: (stats) => stats.maxConcurrentKeys,
+        current: (stats: any) => stats.maxConcurrentKeys,
         type: 'count'
     },
     {
@@ -64,9 +64,9 @@ const ACHIEVEMENTS = [
         name: 'High Availability',
         tier: 2,
         description: '系统稳定性测试达标，Uptime 指标优异',
-        check: (stats) => stats.totalRuntime >= 1800,
+        check: (stats: any) => stats.totalRuntime >= 1800,
         requirement: 1800,
-        current: (stats) => stats.totalRuntime,
+        current: (stats: any) => stats.totalRuntime,
         type: 'count'
     },
     {
@@ -74,7 +74,7 @@ const ACHIEVEMENTS = [
         name: 'Persistence',
         tier: 2,
         description: '异步数据写入落盘，确保事务原子性',
-        check: (stats) => stats.firstDataSave,
+        check: (stats: any) => stats.firstDataSave,
         type: 'once'
     },
     {
@@ -82,7 +82,7 @@ const ACHIEVEMENTS = [
         name: 'Agile Sprint',
         tier: 2,
         description: '短周期快速迭代，Sprint 交付提前达成',
-        check: (stats) => stats.fastGameCompletion,
+        check: (stats: any) => stats.fastGameCompletion,
         type: 'once'
     },
     {
@@ -90,7 +90,7 @@ const ACHIEVEMENTS = [
         name: 'Full Stack',
         tier: 2,
         description: '跨端协议适配完成，多端数据同步正常',
-        check: (stats) => stats.tabSwitchCount >= 1,
+        check: (stats: any) => stats.tabSwitchCount >= 1,
         type: 'once'
     },
     {
@@ -98,7 +98,7 @@ const ACHIEVEMENTS = [
         name: 'Stress Test',
         tier: 2,
         description: '系统抗压能力验证通过，吞吐量保持稳定',
-        check: (stats) => stats.longSession,
+        check: (stats: any) => stats.longSession,
         type: 'once'
     },
     
@@ -108,9 +108,9 @@ const ACHIEVEMENTS = [
         name: 'Big Data',
         tier: 3,
         description: '海量日志清洗完成，数据仓库索引建立完毕',
-        check: (stats) => stats.totalClicks >= 10000,
+        check: (stats: any) => stats.totalClicks >= 10000,
         requirement: 10000,
-        current: (stats) => stats.totalClicks,
+        current: (stats: any) => stats.totalClicks,
         type: 'count'
     },
     {
@@ -118,9 +118,9 @@ const ACHIEVEMENTS = [
         name: 'Five Nines',
         tier: 3,
         description: '服务可用性达到 99.999%，符合 SLA 标准',
-        check: (stats) => stats.totalRuntime >= 14400,
+        check: (stats: any) => stats.totalRuntime >= 14400,
         requirement: 14400,
-        current: (stats) => stats.totalRuntime,
+        current: (stats: any) => stats.totalRuntime,
         type: 'count'
     },
     {
@@ -128,9 +128,9 @@ const ACHIEVEMENTS = [
         name: 'Zero Latency',
         tier: 3,
         description: '反射弧级安全审计，拦截非法扫描尝试',
-        check: (stats) => stats.fastestBossKeyResponse < 500,
+        check: (stats: any) => stats.fastestBossKeyResponse < 500,
         requirement: 500,
-        current: (stats) => stats.fastestBossKeyResponse,
+        current: (stats: any) => stats.fastestBossKeyResponse,
         type: 'count'
     },
     {
@@ -138,7 +138,7 @@ const ACHIEVEMENTS = [
         name: 'Friday Warrior',
         tier: 3,
         description: '具备极强的抗风险能力，顶压力完成周五发布',
-        check: (stats) => stats.fridayAfternoon,
+        check: (stats: any) => stats.fridayAfternoon,
         type: 'once'
     },
     {
@@ -146,8 +146,8 @@ const ACHIEVEMENTS = [
         name: 'Refactoring',
         tier: 3,
         description: '底层代码重构完成，技术债已基本出清',
-        check: (stats, achievements) => {
-            const unlocked = Object.values(achievements).filter(a => a.unlocked && a.tier <= 2).length;
+        check: (stats: any, achievements: any) => {
+            const unlocked = Object.values(achievements).filter((a: any) => a.unlocked && a.tier <= 2).length;
             return unlocked >= 10;
         },
         type: 'once'
@@ -157,7 +157,7 @@ const ACHIEVEMENTS = [
         name: 'Cache Hit',
         tier: 3,
         description: '局部性原理生效，数据读取速度大幅提升',
-        check: (stats) => stats.secretSequence,
+        check: (stats: any) => stats.secretSequence,
         type: 'once'
     },
     
@@ -167,9 +167,9 @@ const ACHIEVEMENTS = [
         name: 'Offline Mode',
         tier: 4,
         description: '边缘计算节点激活，支持离线灾备处理',
-        check: (stats) => stats.offlineDuration >= 900,
+        check: (stats: any) => stats.offlineDuration >= 900,
         requirement: 900,
-        current: (stats) => stats.offlineDuration || 0,
+        current: (stats: any) => stats.offlineDuration || 0,
         type: 'count'
     },
     {
@@ -177,7 +177,7 @@ const ACHIEVEMENTS = [
         name: 'Kernel Inject',
         tier: 4,
         description: '内核级驱动补丁已加载，系统性能获得永久性 Buff',
-        check: (stats) => stats.coffeeCode,
+        check: (stats: any) => stats.coffeeCode,
         type: 'once'
     },
     {
@@ -185,13 +185,13 @@ const ACHIEVEMENTS = [
         name: 'Final Build',
         tier: 4,
         description: 'Version 1.0 正式版发布，具备行业领军水平的健壮性',
-        check: (stats, achievements) => {
+        check: (stats: any, achievements: any) => {
             const total = ACHIEVEMENTS.length;
-            const unlocked = Object.values(achievements).filter(a => a.unlocked && a.id !== 'final_build').length;
+            const unlocked = Object.values(achievements).filter((a: any) => a.unlocked && a.id !== 'final_build').length;
             return unlocked === total - 1;
         },
         type: 'once'
     }
 ];
 
-module.exports = { ACHIEVEMENTS, ACHIEVEMENT_STORE };
+export { ACHIEVEMENTS, ACHIEVEMENT_STORE };

@@ -1,14 +1,14 @@
 // --- 导入模块 ---
-const { SECURE_STORE, CUSTOM_SNIPPETS_STORE, ACHIEVEMENT_STORE } = require('./storage.js');
-const { ACHIEVEMENTS } = require('./achievements.js');
-const { initComboDisplay, addCombo, forceResetCombo, getComboCount, setInteractionMode, onMissed } = require('./combo.js');
-const { initPracticeModeUI, isInPracticeMode, filterLanguageConfig } = require('./practiceMode.js');
-const { saveGameProgress, showRestorePrompt, deleteSaveData } = require('./gameState.js');
-require('./analytics.js'); // Analytics 函数挂载到 window
-require('./achievementUI.js'); // Achievement UI 函数挂载到 window
+import { SECURE_STORE, CUSTOM_SNIPPETS_STORE, ACHIEVEMENT_STORE } from './storage';
+import { ACHIEVEMENTS } from './achievements';
+import { initComboDisplay, addCombo, forceResetCombo, getComboCount, setInteractionMode, onMissed } from './combo';
+import { initPracticeModeUI, isInPracticeMode, filterLanguageConfig } from './practiceMode';
+import { saveGameProgress, showRestorePrompt, deleteSaveData } from './gameState';
+import './analytics'; // Analytics 函数挂载到 window
+import './achievementUI'; // Achievement UI 函数挂载到 window
 
 // 加载成就数据
-let achievementData = ACHIEVEMENT_STORE.load();
+let achievementData: any = ACHIEVEMENT_STORE.load();
 
 // --- 游戏配置 ---
 const LANG_CONFIG = [

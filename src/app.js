@@ -1,6 +1,9 @@
 // --- 导入模块 ---
 const { SECURE_STORE, CUSTOM_SNIPPETS_STORE, ACHIEVEMENT_STORE } = require('./storage.js');
 const { ACHIEVEMENTS } = require('./achievements.js');
+const { initComboDisplay, addCombo, forceResetCombo, getComboCount } = require('./combo.js');
+const { initPracticeModeUI, isInPracticeMode, filterLanguageConfig } = require('./practiceMode.js');
+const { saveGameProgress, showRestorePrompt, deleteSaveData } = require('./gameState.js');
 require('./analytics.js'); // Analytics 函数挂载到 window
 require('./achievementUI.js'); // Achievement UI 函数挂载到 window
 
@@ -70,10 +73,14 @@ const getMaxMisses = (lv) => 10 + (lv - 1) * 5;
 function createSnippet() {
     if (isBossMode || isGameOver) return;
 
-    // 混合使用内置和自定义代码片段
-    let availableConfigs = [...LANG_CONFIG];
-    if (CUSTOM_LANG.snippets.length > 0) {
+    // 混合使用内置和自定义代码片段，并根据练习模式过滤
+    let availableConfigs = filterLanguageConfig([...LANG_CONFIG]);
+    if (CUSTOM_LANG.snippets.length > 0 && !isInPracticeMode()) {
         availableConfigs.push(CUSTOM_LANG);
+    }
+    
+    if (availableConfigs.length === 0) {
+        availableConfigs = LANG_CONFIG; // 回退到默认配置
     }
     
     const langData = availableConfigs[Math.floor(Math.random() * availableConfigs.length)];
@@ -143,13 +150,25 @@ function addScore(amount, x, y) {
     currentScore += amount;
     currentScore = Math.round(currentScore * 10) / 10;
     scoreElement.innerText = currentScore.toFixed(1);
-    if (x && y) showFloatScore(x, y, amount);
+    
+    // 添加连击
+    const combo = addCombo();
+    
+    if (x && y) showFloatScore(x, y, amount, combo);
 }
 
-function showFloatScore(x, y, amount) {
+function showFloatScore(x, y, amount, combo) {
     const el = document.createElement('div');
     el.className = 'float-score';
-    el.innerText = `+${amount.toFixed(1)}`;
+    
+    // 如果有连击，显示连击数
+    if (combo && combo >= 2) {
+        el.innerText = `+${amount.toFixed(1)} (x${combo})`;
+        el.style.color = combo >= 5 ? '#dcdcaa' : '#4ec9b0';
+    } else {
+        el.innerText = `+${amount.toFixed(1)}`;
+    }
+    
     el.style.left = x + 'px';
     el.style.top = y + 'px';
     document.body.appendChild(el);
@@ -363,11 +382,14 @@ function showCheatMsg(text) {
 // --- 排行榜相关 (保持不变) ---
 function triggerGameOver() {
     isGameOver = true;
+    forceResetCombo(); // 重置连击
+    deleteSaveData(); // 清除存档
     onGameEnd(seconds); // 调用成就系统钩子
     gameOverScreen.style.display = 'block';
     document.getElementById('current-result').innerHTML = `
         <div>Processed: <span style="color:#fff">${currentScore.toFixed(1)}</span> objects</div>
         <div style="font-size:0.9em;color:#888">Runtime: ${timerElement.innerText}</div>
+        ${getComboCount() > 0 ? `<div style="font-size:0.9em;color:#dcdcaa">Max Combo: x${getComboCount()}</div>` : ''}
     `;
     checkHighScores();
 }
@@ -904,7 +926,40 @@ document.addEventListener('visibilitychange', () => {
 });
 
 // 初始化
+initComboDisplay(); // 初始化连击显示
+initPracticeModeUI(); // 初始化练习模式UI
 initAchievements();
 checkFridayAfternoon();
 
+// 练习模式下禁用难度增长
+if (isInPracticeMode()) {
+    globalSpeedMultiplier = 1.0; // 固定难度
+}
 
+// 添加进度保存功能（每30秒自动保存）
+setInterval(() => {
+    if (!isBossMode && !isGameOver && !isInPracticeMode()) {
+        saveGameProgress({
+            currentScore,
+            missedCount,
+            seconds,
+            interactionMode,
+            isPracticeMode: isInPracticeMode(),
+            comboCount: getComboCount()
+        });
+    }
+}, 30000);
+
+// 页面关闭前保存进度
+window.addEventListener('beforeunload', () => {
+    if (!isGameOver && !isInPracticeMode()) {
+        saveGameProgress({
+            currentScore,
+            missedCount,
+            seconds,
+            interactionMode,
+            isPracticeMode: isInPracticeMode(),
+            comboCount: getComboCount()
+        });
+    }
+});

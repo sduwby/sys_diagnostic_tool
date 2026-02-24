@@ -1,6 +1,6 @@
 // --- 加密与存储 ---
 const SECURE_STORE = {
-    key: 'MOYU_WORKER_2026',
+    key: 'SYS_DIAG_2026',
     encrypt: function(text) {
         let result = '';
         for (let i = 0; i < text.length; i++) {
@@ -291,13 +291,72 @@ function renderLeaderboard(scores) {
     });
 }
 
+// --- 数据导出功能 ---
+window.exportScores = function(format = 'json') {
+    const scores = SECURE_STORE.load();
+    if (scores.length === 0) {
+        alert('No data to export.');
+        return;
+    }
+    
+    let content = '';
+    let filename = '';
+    let mimeType = '';
+    
+    if (format === 'json') {
+        content = JSON.stringify(scores, null, 2);
+        filename = `diagnostic_logs_${Date.now()}.json`;
+        mimeType = 'application/json';
+    } else if (format === 'csv') {
+        const headers = 'Rank,User,Score,Date\n';
+        const rows = scores.map((s, i) => `${i+1},${s.name},${s.score},${s.date}`).join('\n');
+        content = headers + rows;
+        filename = `diagnostic_logs_${Date.now()}.csv`;
+        mimeType = 'text/csv';
+    }
+    
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+};
+
 // --- 命令行功能 ---
 const terminalOutput = document.getElementById('terminal-output');
 const terminalInput = document.getElementById('terminal-input');
 
-// 命令历史
+// 命令历史（持久化）
+const TERMINAL_HISTORY_KEY = 'sys_diag_terminal_history';
 let commandHistory = [];
 let historyIndex = -1;
+
+// 加载命令历史
+try {
+    const saved = localStorage.getItem(TERMINAL_HISTORY_KEY);
+    if (saved) commandHistory = JSON.parse(saved);
+} catch (e) {}
+
+// 保存命令历史
+function saveCommandHistory() {
+    try {
+        localStorage.setItem(TERMINAL_HISTORY_KEY, JSON.stringify(commandHistory.slice(-50)));
+    } catch (e) {}
+}
+
+// 预设常用命令
+const COMMON_COMMANDS = [
+    'git status',
+    'npm run build',
+    'docker ps',
+    'kubectl get pods',
+    'tail -f /var/log/syslog',
+    'htop',
+    'df -h',
+    'free -m'
+];
 
 // 添加输出到终端
 function addTerminalOutput(text, color = '#888') {
@@ -316,9 +375,10 @@ function executeCommand(command) {
     // 显示命令
     addTerminalOutput(`<span style="color: #4ec9b0;">user@system:~$</span> ${command}`, '#d4d4d4');
     
-    // 添加到历史
+    // 添加到历史并持久化
     commandHistory.push(command);
     historyIndex = commandHistory.length;
+    saveCommandHistory();
     
     // 内置命令
     if (command.trim() === 'clear') {
@@ -327,7 +387,13 @@ function executeCommand(command) {
     }
     
     if (command.trim() === 'help') {
-        addTerminalOutput('Available commands:\n  clear - Clear terminal\n  help - Show this help\n  Or enter any system command', '#6a9955');
+        addTerminalOutput('Available commands:\n  clear - Clear terminal\n  help - Show this help\n  history - Show command history\n  Or enter any system command', '#6a9955');
+        return;
+    }
+    
+    if (command.trim() === 'history') {
+        const recentHistory = commandHistory.slice(-20).map((cmd, i) => `  ${i+1}. ${cmd}`).join('\n');
+        addTerminalOutput(recentHistory || 'No history.', '#888');
         return;
     }
     

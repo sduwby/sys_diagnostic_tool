@@ -28,6 +28,7 @@
   "build": {
     "appId": "com.sysdiag.tool",
     "productName": "System Diagnostic Tool",
+    "asar": true,
     "directories": {
       "output": "dist"
     },
@@ -35,6 +36,9 @@
       "main.js",
       "src/**/*"
     ],
+    "extraMetadata": {
+      "main": "main.js"
+    },
     "win": {
       "target": [
         {
@@ -42,7 +46,7 @@
           "arch": ["x64", "ia32", "arm64"]
         }
       ],
-      "icon": "src/icon.ico"
+      "icon": "src/icon.svg"
     },
     "nsis": {
       "oneClick": false,
@@ -57,8 +61,8 @@
           "arch": ["x64", "arm64"]
         }
       ],
-      "icon": "src/icon.icns",
-      "category": "public.app-category.games"
+      "icon": "src/icon.svg",
+      "category": "public.app-category.utilities"
     },
     "dmg": {
       "contents": [
@@ -85,8 +89,8 @@
           "arch": ["x64", "arm64"]
         }
       ],
-      "icon": "src/icon.png",
-      "category": "Game"
+      "icon": "src/icon.svg",
+      "category": "Utility"
     }
   }
 }

@@ -7,7 +7,7 @@
 </head>
 <body>
 
-<div id="cheat-msg">[ CHEAT ACTIVATED ]</div>
+<div id="cheat-msg">[ DEBUG MODE ]</div>
 
 <div id="main-ui">
     <div id="header">
@@ -39,7 +39,11 @@
         </thead>
         <tbody id="lb-body"></tbody>
     </table>
-    <button class="btn-restart" onclick="location.reload()">System Reboot</button>
+    <div style="margin-top: 10px; display: flex; gap: 10px;">
+        <button class="btn-restart" onclick="location.reload()">System Reboot</button>
+        <button onclick="exportScores('json')" style="background:#3e3e42">Export JSON</button>
+        <button onclick="exportScores('csv')" style="background:#3e3e42">Export CSV</button>
+    </div>
 </div>
 
 <div id="fake-screen">

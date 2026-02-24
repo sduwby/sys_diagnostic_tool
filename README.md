@@ -116,6 +116,7 @@ npm run build
 - Leaderboard data stored in local `localStorage`
 - Data is encrypted for basic security
 - Recommend testing locally before distribution
+- **Icon files required**: Place `icon.ico`, `icon.icns`, and `icon.png` in `src/` directory before building
 
 ## Tips
 

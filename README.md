@@ -1,33 +1,80 @@
-# System Diagnostic Tool
+# System Diagnostic Tool / AWDMS
 
 [简体中文](./README.zh-CN.md) | [繁體中文](./README.zh-TW.md) | [English](./README.md) | [Русский](./README.ru.md) | [Français](./README.fr.md)
 
-A professional typing accuracy analyzer and performance diagnostic application.  
+A professional typing practice tool simulating agile development workflow.  
+Integrated with **AWDMS (Agile Workflow & Dependency Management System)** for realistic dev environment simulation.  
 Supports packaging for Windows, macOS, and Linux platforms.
 
-## Features
+## ✨ Core Features
 
-- 🎮 Multi-language code snippet practice (JS, C++, Java, Go, Python)
-- 🎯 Level system + Score leaderboard for typing proficiency tracking
-- 🔐 Local encrypted data storage for privacy
-- 🎭 Quick minimize feature (`ESC` key for instant window switch)
+### 🎮 Game Modes
+- **Normal Mode** - Classic rhythm game
+- **Time Attack** - 60-second sprint, 2x speed
+- **Survival Mode** - 5 misses game over, extreme challenge
+- **Zen Mode** - No pressure practice, adjustable speed (1.0x-5.0x)
 
-## Project Structure
+### 🎯 Game Mechanics
+- Multi-language code snippets (JS, C++, Java, Go, Python + Custom)
+- Level system + Global leaderboard
+- Combo system (3/5/10/20/50/100 combo effects)
+- Achievement system (18-tier certifications)
+
+### 🔊 Sound System
+- 15 procedural sound effects (click/combo/miss/level-up/achievement, etc.)
+- Volume control + Quick mute
+- Persistent settings
+
+### 🎨 Theme System
+- 6 preset themes (VS Code Dark, GitHub, Monokai, Dracula, Nord, Solarized)
+- Custom theme editor (4-color customization)
+- CSS variable support
+
+### 📋 AWDMS System (Project "Moyu")
+- **Daily Tasks**: 4-tier missions (Junior → Principal)
+- **Item System**: 6 core dependencies (Stable → Legacy)
+- **Gacha Compilation**: Source package compilation draw (2%-100% success + pity)
+- **$COMMITS** Credits system
+- **Professional Disguise UI** (TODO.md / package.json / AWS console style)
+
+### 🔐 Security Features
+- AES-256-GCM + HMAC-SHA256 encryption
+- Local storage, no cloud sync
+- Boss key quick switch (`ESC`)
+
+## Project Structure (Modularized + 100% TypeScript)
 
 ```text
 sys_diagnostic_tool/
 ├── package.json          # Project configuration
-├── main.js               # Electron main process
+├── main.ts               # Electron main process
 ├── src/
 │   ├── index.html        # Main interface
-│   ├── app.js            # Core game logic (911 lines)
-│   ├── app.css           # Styling
-│   ├── storage.js        # AES-256-GCM encryption & data persistence
-│   ├── achievements.js   # 18-tier achievement definitions
-│   ├── analytics.js      # Canvas-based charts & statistics
-│   ├── achievementUI.js  # Achievement panel rendering
-│   └── icon.svg          # Application icon (cross-platform)
-└── dist/                 # Build output (auto-generated)
+│   ├── app.ts            # Core game logic (490 lines)
+│   ├── app.css           # CSS variable styling system
+│   ├── storage.ts        # AES-256-GCM encryption & persistence
+│   ├── achievements.ts   # 18-tier achievement definitions
+│   ├── achievementTracker.ts  # Achievement tracking engine (194 lines)
+│   ├── achievementUI.ts  # Achievement panel rendering
+│   ├── analytics.ts      # Canvas chart statistics
+│   ├── soundEffects.ts   # Web Audio API sound engine (187 lines)
+│   ├── combo.ts          # Combo system
+│   ├── gameState.ts      # Progress save/restore
+│   ├── practiceMode.ts   # Practice mode
+│   ├── challengeModes.ts # Challenge mode system (374 lines)
+│   ├── gameConfig.ts     # Game configuration (35 lines)
+│   ├── cheats.ts         # Cheat system (106 lines)
+│   ├── leaderboard.ts    # Leaderboard system (93 lines)
+│   ├── terminal.ts       # Terminal system (128 lines)
+│   ├── uiHandlers.ts     # UI event handlers (145 lines)
+│   ├── themeSystem.ts    # Theme system (320 lines)
+│   ├── dailyTasks.ts     # AWDMS daily missions (240 lines)
+│   ├── itemSystem.ts     # AWDMS item system (259 lines)
+│   ├── gachaSystem.ts    # AWDMS compilation/gacha (219 lines)
+│   ├── awdmsUI.ts        # AWDMS professional UI (428 lines)
+│   ├── itemEffects.ts    # AWDMS item effects (119 lines)
+│   └── icon.svg          # Application icon
+└── dist/                 # TypeScript compilation output
 ```
 
 ## Installation
@@ -111,10 +158,12 @@ npm run build
 
 ## Tech Stack
 
-- Electron
-- Vanilla JavaScript
-- HTML5 / CSS3
-- electron-builder
+- **Electron** - Cross-platform desktop app
+- **TypeScript** - 100% type safety
+- **Web Audio API** - Procedural sound generation
+- **CSS Variables** - Dynamic theme system
+- **localStorage** - Local data persistence
+- **electron-builder** - Packaging & build
 
 ## Notes
 

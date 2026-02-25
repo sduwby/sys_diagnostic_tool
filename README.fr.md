@@ -1,33 +1,80 @@
-# Outil de diagnostic système
+# Outil de diagnostic système / AWDMS
 
 [简体中文](./README.zh-CN.md) | [繁體中文](./README.zh-TW.md) | [English](./README.md) | [Русский](./README.ru.md) | [Français](./README.fr.md)
 
-Un analyseur professionnel de précision de frappe et application de diagnostic de performance.  
-Prend en charge l'empaquetage pour les plateformes Windows, macOS et Linux.
+Un outil professionnel de pratique de frappe simulant un flux de travail de développement agile.  
+Intégré avec **AWDMS (Agile Workflow & Dependency Management System)** pour simuler un environnement de développement réel.  
+Prend en charge l'empaquetage pour Windows, macOS et Linux.
 
-## Caractéristiques
+## ✨ Fonctionnalités principales
 
-- 🎮 Pratique de fragments de code multilingues (JS, C++, Java, Go, Python)
-- 🎯 Système de niveaux + Classement des scores pour suivre la compétence de frappe
-- 🔐 Stockage de données local chiffré pour la confidentialité
-- 🎭 Fonction de minimisation rapide (touche `ESC` pour changement de fenêtre instantané)
+### 🎮 Modes de jeu
+- **Mode Normal** - Jeu de rythme classique
+- **Attaque chronométrée** - Sprint de 60 secondes, vitesse ×2
+- **Mode Survie** - 5 erreurs = game over, défi extrême
+- **Mode Zen** - Pratique sans pression, vitesse ajustable (1.0x-5.0x)
 
-## Structure du projet
+### 🎯 Mécaniques de jeu
+- Fragments de code multilingues (JS, C++, Java, Go, Python + Personnalisés)
+- Système de niveaux + Classement mondial
+- Système de combo (effets combo 3/5/10/20/50/100)
+- Système de succès (certifications à 18 niveaux)
+
+### 🔊 Système sonore
+- 15 effets sonores procéduraux (clic/combo/raté/montée de niveau/succès, etc.)
+- Contrôle du volume + Sourdine rapide
+- Paramètres persistants
+
+### 🎨 Système de thèmes
+- 6 thèmes prédéfinis (VS Code Dark, GitHub, Monokai, Dracula, Nord, Solarized)
+- Éditeur de thème personnalisé (personnalisation 4 couleurs)
+- Support des variables CSS
+
+### 📋 Système AWDMS (Projet "Moyu")
+- **Tâches quotidiennes**: Missions à 4 niveaux (Junior → Principal)
+- **Système d'objets**: 6 dépendances principales (Stable → Legacy)
+- **Compilation Gacha**: Tirage de paquets de code source (succès 2%-100% + pitié)
+- **$COMMITS** Système de crédits
+- **UI déguisé professionnel** (style TODO.md / package.json / console AWS)
+
+### 🔐 Fonctionnalités de sécurité
+- Chiffrement AES-256-GCM + HMAC-SHA256
+- Stockage local, pas de synchronisation cloud
+- Changement rapide par touche Boss (`ESC`)
+
+## Structure du projet (Modulaire + 100% TypeScript)
 
 ```text
 sys_diagnostic_tool/
 ├── package.json          # Configuration du projet
-├── main.js               # Processus principal Electron
+├── main.ts               # Processus principal Electron
 ├── src/
 │   ├── index.html        # Interface principale
-│   ├── app.js            # Logique de jeu principale (911 lignes)
-│   ├── app.css           # Styles
-│   ├── storage.js        # Chiffrement AES-256-GCM et persistance des données
-│   ├── achievements.js   # Définitions de 18 niveaux de succès
-│   ├── analytics.js      # Graphiques Canvas et analyse statistique
-│   ├── achievementUI.js  # Rendu du panneau de succès
-│   └── icon.svg          # Icône de l'application (multiplateforme)
-└── dist/                 # Sortie de build (auto-généré)
+│   ├── app.ts            # Logique de jeu principale (490 lignes)
+│   ├── app.css           # Système de style à variables CSS
+│   ├── storage.ts        # Chiffrement AES-256-GCM et persistance
+│   ├── achievements.ts   # Définitions de succès à 18 niveaux
+│   ├── achievementTracker.ts  # Moteur de suivi des succès (194 lignes)
+│   ├── achievementUI.ts  # Rendu du panneau de succès
+│   ├── analytics.ts      # Statistiques de graphiques Canvas
+│   ├── soundEffects.ts   # Moteur sonore Web Audio API (187 lignes)
+│   ├── combo.ts          # Système de combo
+│   ├── gameState.ts      # Sauvegarde/restauration de progression
+│   ├── practiceMode.ts   # Mode pratique
+│   ├── challengeModes.ts # Système de modes de défi (374 lignes)
+│   ├── gameConfig.ts     # Configuration du jeu (35 lignes)
+│   ├── cheats.ts         # Système de triche (106 lignes)
+│   ├── leaderboard.ts    # Système de classement (93 lignes)
+│   ├── terminal.ts       # Système de terminal (128 lignes)
+│   ├── uiHandlers.ts     # Gestionnaires d'événements UI (145 lignes)
+│   ├── themeSystem.ts    # Système de thèmes (320 lignes)
+│   ├── dailyTasks.ts     # Missions quotidiennes AWDMS (240 lignes)
+│   ├── itemSystem.ts     # Système d'objets AWDMS (259 lignes)
+│   ├── gachaSystem.ts    # Compilation/gacha AWDMS (219 lignes)
+│   ├── awdmsUI.ts        # UI professionnel AWDMS (428 lignes)
+│   ├── itemEffects.ts    # Effets d'objets AWDMS (119 lignes)
+│   └── icon.svg          # Icône de l'application
+└── dist/                 # Sortie de compilation TypeScript
 ```
 
 ## Installation
@@ -111,10 +158,12 @@ npm run build
 
 ## Stack technologique
 
-- Electron
-- Vanilla JavaScript
-- HTML5 / CSS3
-- electron-builder
+- **Electron** - Application de bureau multiplateforme
+- **TypeScript** - Sécurité de type à 100%
+- **Web Audio API** - Génération sonore procédurale
+- **Variables CSS** - Système de thème dynamique
+- **localStorage** - Persistance des données locales
+- **electron-builder** - Empaquetage et construction
 
 ## Remarques
 

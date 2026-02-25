@@ -1,33 +1,80 @@
-# 系统诊断工具
+# 系统诊断工具 / AWDMS
 
 [简体中文](./README.zh-CN.md) | [繁體中文](./README.zh-TW.md) | [English](./README.md) | [Русский](./README.ru.md) | [Français](./README.fr.md)
 
-一个专业的打字准确率分析器和性能诊断应用程序。  
+一个模拟敏捷开发工作流的专业打字练习工具。  
+集成 **AWDMS (Agile Workflow & Dependency Management System)** 模拟真实开发环境。  
 支持 Windows、macOS 和 Linux 平台打包。
 
-## 特性
+## ✨ 核心特性
 
-- 🎮 多语言代码片段练习（JS、C++、Java、Go、Python）
-- 🎯 等级系统 + 分数排行榜追踪打字熟练度
-- 🔐 本地加密数据存储保护隐私
-- 🎭 快速最小化功能（`ESC` 键即时切换窗口）
+### 🎮 游戏模式
+- **普通模式** - 经典节奏游戏
+- **限时模式** - 60秒速战速决，2倍速度
+- **生存模式** - 5次Miss即失败，极限挑战
+- **禅意模式** - 无压力练习，速度可调(1.0x-5.0x)
 
-## 项目结构
+### 🎯 游戏机制
+- 多语言代码片段（JS、C++、Java、Go、Python + 自定义）
+- 等级系统 + 全球排行榜
+- 连击系统（3/5/10/20/50/100连击特效）
+- 成就系统（18层认证）
+
+### 🔊 音效系统
+- 15种程序化音效（点击/连击/Miss/升级/成就等）
+- 音量控制 + 一键静音
+- 音效设置持久化
+
+### 🎨 主题系统
+- 6个预设主题（VS Code Dark、GitHub、Monokai、Dracula、Nord、Solarized）
+- 自定义主题编辑器（4色调自由搭配）
+- CSS 变量支持
+
+### 📋 AWDMS 系统（Project "Moyu"）
+- **每日任务**：4级工单（Junior → Principal）
+- **道具系统**：6个核心依赖包（Stable → Legacy）
+- **Gacha编译**：源码包编译抽卡（2%-100%成功率 + 保底）
+- **$COMMITS** 算力积分系统
+- **专业伪装UI**（TODO.md / package.json / AWS控制台风格）
+
+### 🔐 安全特性
+- AES-256-GCM + HMAC-SHA256 加密
+- 本地数据存储无云同步
+- Boss键快速切换（`ESC`）
+
+## 项目结构（模块化 + 100% TypeScript）
 
 ```text
 sys_diagnostic_tool/
 ├── package.json          # 项目配置
-├── main.js               # Electron 主进程
+├── main.ts               # Electron 主进程
 ├── src/
 │   ├── index.html        # 主界面
-│   ├── app.js            # 核心游戏逻辑 (911行)
-│   ├── app.css           # 样式
-│   ├── storage.js        # AES-256-GCM 加密与数据持久化
-│   ├── achievements.js   # 18层成就定义
-│   ├── analytics.js      # Canvas 图表与统计分析
-│   ├── achievementUI.js  # 成就面板渲染
-│   └── icon.svg          # 应用图标（跨平台）
-└── dist/                 # 构建输出（自动生成）
+│   ├── app.ts            # 核心游戏逻辑 (490行)
+│   ├── app.css           # CSS 变量样式系统
+│   ├── storage.ts        # AES-256-GCM 加密持久化
+│   ├── achievements.ts   # 18层成就定义
+│   ├── achievementTracker.ts  # 成就追踪引擎 (194行)
+│   ├── achievementUI.ts  # 成就面板渲染
+│   ├── analytics.ts      # Canvas 图表统计
+│   ├── soundEffects.ts   # Web Audio API 音效引擎 (187行)
+│   ├── combo.ts          # 连击系统
+│   ├── gameState.ts      # 进度保存/恢复
+│   ├── practiceMode.ts   # 练习模式
+│   ├── challengeModes.ts # 挑战模式系统 (374行)
+│   ├── gameConfig.ts     # 游戏配置 (35行)
+│   ├── cheats.ts         # 作弊系统 (106行)
+│   ├── leaderboard.ts    # 排行榜系统 (93行)
+│   ├── terminal.ts       # 终端系统 (128行)
+│   ├── uiHandlers.ts     # UI事件处理 (145行)
+│   ├── themeSystem.ts    # 主题系统 (320行)
+│   ├── dailyTasks.ts     # AWDMS 每日任务 (240行)
+│   ├── itemSystem.ts     # AWDMS 道具系统 (259行)
+│   ├── gachaSystem.ts    # AWDMS 编译/抽卡 (219行)
+│   ├── awdmsUI.ts        # AWDMS 专业UI (428行)
+│   ├── itemEffects.ts    # AWDMS 道具效果 (119行)
+│   └── icon.svg          # 应用图标
+└── dist/                 # TypeScript 编译输出
 ```
 
 ## 安装
@@ -111,10 +158,12 @@ npm run build
 
 ## 技术栈
 
-- Electron
-- Vanilla JavaScript
-- HTML5 / CSS3
-- electron-builder
+- **Electron** - 跨平台桌面应用
+- **TypeScript** - 100% 类型安全
+- **Web Audio API** - 程序化音效生成
+- **CSS 变量** - 动态主题系统
+- **localStorage** - 本地数据持久化
+- **electron-builder** - 打包构建
 
 ## 说明
 

@@ -1,6 +1,18 @@
+:root {
+    --color-bg: #1e1e1e;
+    --color-text: #d4d4d4;
+    --color-primary: #4ec9b0;
+    --color-secondary: #569cd6;
+    --color-success: #6a9955;
+    --color-warning: #dcdcaa;
+    --color-error: #f44747;
+    --color-border: #555;
+    --color-panel: #2d2d30;
+}
+
 body {
-    background-color: #1e1e1e;
-    color: #d4d4d4;
+    background-color: var(--color-bg);
+    color: var(--color-text);
     font-family: 'Consolas', 'Monaco', monospace;
     margin: 0;
     padding: 20px;
@@ -9,7 +21,7 @@ body {
 }
 
 #header {
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid var(--color-border);
     padding-bottom: 10px;
     margin-bottom: 20px;
     display: flex;
@@ -92,10 +104,10 @@ body {
 .c-go { color: #00ADD8; }
 .c-py { color: #3572A5; }
 .c-custom { color: #ff79c6; }
-.green { color: #6a9955; }
-.red { color: #f44747; font-weight: bold; }
-.blue { color: #569cd6; }
-.comment { color: #6a9955; }
+.green { color: var(--color-success); }
+.red { color: var(--color-error); font-weight: bold; }
+.blue { color: var(--color-secondary); }
+.comment { color: var(--color-success); }
 
 .hidden { display: none !important; }
 

@@ -57,6 +57,7 @@ import {
 } from './itemEffects';
 import './analytics'; // Analytics 函数挂载到 window
 import './achievementUI'; // Achievement UI 函数挂载到 window
+import { initThemeSystem, getCurrentTheme, applyTheme, initThemeUI } from './themeSystem';
 
 // --- 类型定义 ---
 type InteractionMode = 'click' | 'type';
@@ -545,6 +546,12 @@ createCommitsIndicator(awdmsTaskState);
 // 启动道具效果
 applyAutoPrettier(awdmsItemState, addScore);
 applyDeepSeekAI(awdmsItemState, addScore, () => createAISnippet(container));
+
+// --- 初始化主题系统 ---
+const themeState = initThemeSystem();
+const currentTheme = getCurrentTheme(themeState);
+applyTheme(currentTheme);
+initThemeUI(themeState);
 
 // 音效控制 UI 初始化
 const soundToggleBtn = document.getElementById('sound-toggle')!;

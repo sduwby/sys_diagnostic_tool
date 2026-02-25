@@ -34,6 +34,27 @@ import {
     isRankedMode,
     getModeName
 } from './challengeModes';
+// --- AWDMS 系统导入 ---
+import { initDailyTaskState, updateTaskStats, saveDailyTaskState, type DailyTaskState } from './dailyTasks';
+import { initItemSystemState, updateMissCount, type ItemSystemState } from './itemSystem';
+import { initGachaState, type GachaSystemState } from './gachaSystem';
+import {
+    initAWDMSUI,
+    setupTaskClaimHandler,
+    setupItemToggleHandler,
+    setupCompileHandler,
+    setupPurchaseHandler,
+    createCommitsIndicator,
+    updateCommitsDisplay
+} from './awdmsUI';
+import {
+    applyAutoPrettier,
+    applyDeepSeekAI,
+    createAISnippet,
+    getK8sMultiplier,
+    getLodashBonus,
+    stopAllItemEffects
+} from './itemEffects';
 import './analytics'; // Analytics 函数挂载到 window
 import './achievementUI'; // Achievement UI 函数挂载到 window
 
@@ -53,6 +74,15 @@ if (!soundSettings.enabled) {
 // 加载自定义代码片段
 let customSnippets = CUSTOM_SNIPPETS_STORE.load();
 CUSTOM_LANG.snippets = customSnippets;
+
+// --- 初始化 AWDMS 系统 ---
+let awdmsTaskState: DailyTaskState = initDailyTaskState();
+let awdmsItemState: ItemSystemState = initItemSystemState();
+let awdmsGachaState: GachaSystemState = initGachaState();
+
+// 字符输入追踪（用于burst检测）
+let charInputBuffer: { time: number; count: number }[] = [];
+let clickTimestamps: number[] = []; // 用于k8s-autoscale频率计算
 
 const container = document.getElementById('game-container')!;
 const scoreElement = document.getElementById('score')!;
@@ -151,6 +181,10 @@ function createSnippet(): void {
             missedCount++;
             soundEffects.playMiss(); // 播放 Miss 音效
             onMissed(); // 溢出时重置连击
+            
+            // AWDMS: 更新Miss计数
+            updateMissCount(awdmsItemState, true);
+            
             div.remove();
         } else if (!isWallCheatActive() || y > 40) { // 如果没激活作弊，或者虽然激活但还没到顶，继续动画
             requestAnimationFrame(move);
@@ -163,7 +197,19 @@ function createSnippet(): void {
 }
 
 function addScore(amount: number, x?: number, y?: number): void {
-    currentScore += amount;
+    // 应用道具加成
+    const lodashBonus = getLodashBonus(awdmsItemState);
+    
+    // 更新点击时间戳用于k8s-autoscale
+    clickTimestamps.push(Date.now());
+    clickTimestamps = clickTimestamps.filter(t => Date.now() - t < 1000); // 只保留最近1秒
+    const clicksPerSecond = clickTimestamps.length;
+    const k8sMultiplier = getK8sMultiplier(awdmsItemState, clicksPerSecond);
+    
+    // 计算最终得分
+    const finalAmount = (amount + lodashBonus) * k8sMultiplier;
+    
+    currentScore += finalAmount;
     currentScore = Math.round(currentScore * 10) / 10;
     scoreElement.innerText = currentScore.toFixed(1);
     
@@ -184,7 +230,11 @@ function addScore(amount: number, x?: number, y?: number): void {
         soundEffects.playPerfectCombo(combo);
     }
     
-    if (x && y) showFloatScore(x, y, amount, combo);
+    // AWDMS: 更新字符统计
+    updateTaskStats(awdmsTaskState, 'char');
+    updateCommitsDisplay(awdmsTaskState);
+    
+    if (x && y) showFloatScore(x, y, finalAmount, combo);
 }
 
 function showFloatScore(x: number, y: number, amount: number, combo: number): void {
@@ -225,7 +275,7 @@ setInterval(() => {
             timerElement.style.color = '#666';
         }
         
-        levelElement.innerText = lv;
+        levelElement.innerText = String(lv);
         globalSpeedMultiplier = getDifficultyMultiplier(seconds); // 使用公式化难度
 
         // 检测等级提升
@@ -235,7 +285,7 @@ setInterval(() => {
         }
 
         const stability = Math.max(0, 100 - (missedCount / getMaxMisses(lv) * 100));
-        stabilityElement.innerText = Math.floor(stability);
+        stabilityElement.innerText = String(Math.floor(stability));
 
         // 低稳定度警告（每5秒播放一次）
         if (stability < 20 && seconds % 5 === 0) {
@@ -358,6 +408,10 @@ window.addEventListener('keydown', (e) => {
     // Boss 键
     if (e.key === 'Escape' && !isGameOver) {
         trackBossKey(achievementData, checkAndUnlockAchievement); // 追踪 Boss 键按下
+        
+        // AWDMS: 标记Boss键使用
+        updateTaskStats(awdmsTaskState, 'bossKey');
+        
         isBossMode = !isBossMode;
         if (isBossMode) {
             mainUI.classList.add('hidden');
@@ -386,6 +440,16 @@ window.addEventListener('keydown', (e) => {
     // --- 作弊码检测 ---
     if (e.key.length === 1) {
         trackKeyPress(achievementData, checkAndUnlockAchievement); // 追踪键盘按键
+        
+        // AWDMS: 追踪字符输入和burst
+        const now = Date.now();
+        charInputBuffer.push({ time: now, count: 1 });
+        charInputBuffer = charInputBuffer.filter(entry => now - entry.time < 10000); // 保留10秒内
+        const burst10s = charInputBuffer.reduce((sum, entry) => sum + entry.count, 0);
+        if (burst10s > (awdmsTaskState.stats.burst10s || 0)) {
+            updateTaskStats(awdmsTaskState, 'burst', burst10s);
+        }
+        
         checkCheats(
             e.key,
             achievementData,
@@ -450,6 +514,9 @@ setInterval(() => {
     if (!isBossMode && !isGameOver) {
         achievementData.stats.totalRuntime++;
         
+        // AWDMS: 更新uptime统计
+        updateTaskStats(awdmsTaskState, 'uptime');
+        
         checkAndUnlockAchievement('heartbeat', achievementData, undefined, true);
         checkAndUnlockAchievement('high_availability', achievementData, undefined, true);
         checkAndUnlockAchievement('five_nines', achievementData, undefined, true);
@@ -466,6 +533,18 @@ initChallengeModeUI(); // 初始化挑战模式UI
 loadChallengeMode(); // 加载挑战模式设置
 initSettingsPanel(achievementData, checkAndUnlockAchievement);
 initTerminalInput();
+
+// --- 初始化 AWDMS 系统 ---
+initAWDMSUI(awdmsTaskState, awdmsItemState, awdmsGachaState);
+setupTaskClaimHandler(awdmsTaskState, awdmsGachaState);
+setupItemToggleHandler(awdmsItemState);
+setupCompileHandler(awdmsGachaState, awdmsTaskState, awdmsItemState);
+setupPurchaseHandler(awdmsTaskState);
+createCommitsIndicator(awdmsTaskState);
+
+// 启动道具效果
+applyAutoPrettier(awdmsItemState, addScore);
+applyDeepSeekAI(awdmsItemState, addScore, () => createAISnippet(container));
 
 // 音效控制 UI 初始化
 const soundToggleBtn = document.getElementById('sound-toggle')!;
@@ -545,11 +624,11 @@ showRestorePrompt((progress: any) => {
     if (interactionMode === 'type') {
         typingInputArea.style.display = 'block';
     }
-});
+}, () => {});
 
 // 成就系统后台检查
 setInterval(() => {
     if (!isBossMode && !isGameOver) {
-        checkAchievements(achievementData, checkAndUnlockAchievement);
+        checkAchievements(achievementData);
     }
 }, 500);

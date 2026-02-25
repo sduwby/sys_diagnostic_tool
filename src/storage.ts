@@ -191,4 +191,41 @@ const ACHIEVEMENT_STORE: any = {
     }
 };
 
-export { SECURE_STORE, CUSTOM_SNIPPETS_STORE, ACHIEVEMENT_STORE };
+// --- 音效设置存储 ---
+const SOUND_SETTINGS_STORE: any = {
+    filePath: path.join(os.homedir(), '.sys_diagnostic_sound_settings'),
+    
+    save: function(settings: any): void {
+        try {
+            const encrypted = SECURE_STORE.encrypt(JSON.stringify(settings));
+            if (encrypted) {
+                fs.writeFileSync(this.filePath, encrypted, 'utf8');
+            }
+        } catch (e) {
+            console.error('Failed to save sound settings:', e);
+        }
+    },
+    
+    load: function(): any {
+        try {
+            if (!fs.existsSync(this.filePath)) {
+                return this.createDefaultSettings();
+            }
+            const encrypted = fs.readFileSync(this.filePath, 'utf8');
+            const str = SECURE_STORE.decrypt(encrypted);
+            return str ? JSON.parse(str) : this.createDefaultSettings();
+        } catch (e) {
+            console.error('Failed to load sound settings:', e);
+            return this.createDefaultSettings();
+        }
+    },
+    
+    createDefaultSettings: function(): any {
+        return {
+            enabled: true,
+            volume: 0.3 // 0-1
+        };
+    }
+};
+
+export { SECURE_STORE, CUSTOM_SNIPPETS_STORE, ACHIEVEMENT_STORE, SOUND_SETTINGS_STORE };

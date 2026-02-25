@@ -18,7 +18,14 @@
             <div class="red">// Buffer Capacity: <span id="stability">100</span>%</div>
             <div class="comment">// Time: <span id="timer">00:00</span></div>
         </div>
-        <div style="position: absolute; top: 10px; right: 10px; display: flex; gap: 8px;">
+        <div style="position: absolute; top: 10px; right: 10px; display: flex; gap: 8px; align-items: center;">
+            <button id="sound-toggle" style="background: #3e3e42; color: #d4d4d4; border: 1px solid #555; padding: 5px 12px; cursor: pointer; font-family: 'Consolas', monospace; font-size: 12px;">
+                🔊 <span id="sound-status">ON</span>
+            </button>
+            <div style="display: flex; align-items: center; gap: 5px; padding: 5px 10px; background: #3e3e42; border: 1px solid #555; border-radius: 2px;">
+                <span style="color: #888; font-size: 11px; font-family: 'Consolas', monospace;">VOL</span>
+                <input type="range" id="volume-slider" min="0" max="100" value="30" style="width: 60px; height: 3px; cursor: pointer;">
+            </div>
             <button id="settings-btn" style="background: #3e3e42; color: #d4d4d4; border: 1px solid #555; padding: 5px 12px; cursor: pointer; font-family: 'Consolas', monospace; font-size: 12px;">
                 ⚙ Settings
             </button>

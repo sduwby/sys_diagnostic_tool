@@ -1,4 +1,5 @@
 // --- 连击系统模块 ---
+import { soundEffects } from './soundEffects';
 
 let comboCount: number = 0;
 let lastHitTime: number = 0;
@@ -67,6 +68,9 @@ function addCombo(mode: string | null = null): number {
 function showCombo(): void {
     const comboDiv = document.getElementById('combo-display');
     if (!comboDiv) return;
+    
+    // 播放连击音效
+    soundEffects.playCombo(comboCount);
     
     // 根据连击数调整颜色和大小
     let color = '#4ec9b0';

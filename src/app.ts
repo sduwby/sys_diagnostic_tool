@@ -21,6 +21,19 @@ import {
     checkFridayAfternoon,
     onGameEnd
 } from './achievementTracker';
+import {
+    initChallengeModeUI,
+    getCurrentChallengeMode,
+    shouldGameOver,
+    getSnippetSpawnInterval,
+    getFallSpeedMultiplier,
+    shouldShowTimer,
+    getRemainingTime,
+    loadChallengeMode,
+    saveChallengeMode,
+    isRankedMode,
+    getModeName
+} from './challengeModes';
 import './analytics'; // Analytics 函数挂载到 window
 import './achievementUI'; // Achievement UI 函数挂载到 window
 
@@ -113,7 +126,9 @@ function createSnippet(): void {
 
     container.appendChild(div);
 
-    const totalSpeed = (1.0 + Math.random() * 1.5) * langData.speedBonus * globalSpeedMultiplier;
+    // 应用挑战模式的速度倍率
+    const challengeSpeedMultiplier = getFallSpeedMultiplier();
+    const totalSpeed = (1.0 + Math.random() * 1.5) * langData.speedBonus * globalSpeedMultiplier * challengeSpeedMultiplier;
 
     function move(): void {
         if (isBossMode || isGameOver) {
@@ -195,7 +210,21 @@ setInterval(() => {
     if (!isBossMode && !isGameOver) {
         seconds++;
         const lv = getLevel(seconds);
-        timerElement.innerText = `${Math.floor(seconds / 60).toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}`;
+        
+        // 挑战模式：限时模式显示倒计时
+        const remainingTime = getRemainingTime(seconds);
+        if (remainingTime !== null) {
+            timerElement.innerText = `${Math.floor(remainingTime / 60).toString().padStart(2, '0')}:${(remainingTime % 60).toString().padStart(2, '0')}`;
+            timerElement.style.color = remainingTime <= 10 ? '#f44747' : '#d4d4d4';
+        } else if (shouldShowTimer()) {
+            timerElement.innerText = `${Math.floor(seconds / 60).toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}`;
+            timerElement.style.color = '#d4d4d4';
+        } else {
+            // 禅意模式不显示计时器
+            timerElement.innerText = '--:--';
+            timerElement.style.color = '#666';
+        }
+        
         levelElement.innerText = lv;
         globalSpeedMultiplier = getDifficultyMultiplier(seconds); // 使用公式化难度
 
@@ -219,7 +248,8 @@ setInterval(() => {
             soundEffects.playNearFail();
         }
 
-        if (missedCount >= getMaxMisses(lv)) {
+        // 使用挑战模式的失败判定
+        if (shouldGameOver(missedCount, seconds, lv, getMaxMisses)) {
             triggerGameOver();
         }
     }
@@ -227,7 +257,9 @@ setInterval(() => {
 
 const gameLoop = (): void => {
     if (!isBossMode && !isGameOver) createSnippet();
-    const interval = 700 / globalSpeedMultiplier;
+    // 应用挑战模式的生成间隔倍率
+    const baseInterval = 700 / globalSpeedMultiplier;
+    const interval = getSnippetSpawnInterval(baseInterval);
     setTimeout(gameLoop, interval);
 };
 gameLoop();
@@ -378,12 +410,26 @@ function triggerGameOver(): void {
     onGameEnd(seconds, missedCount, achievementData, checkAndUnlockAchievement); // 调用成就系统钩子
     gameOverScreen.style.display = 'block';
     const currentResultDiv = document.getElementById('current-result')!;
+    
+    // 显示模式标识
+    const modeName = getModeName();
+    const modeTag = isRankedMode() ? '' : `<div style="color: #4ec9b0; font-size: 11px; margin-bottom: 5px;">[ ${modeName}模式 - 不计分 ]</div>`;
+    
     currentResultDiv.innerHTML = `
+        ${modeTag}
         <div>Processed: <span style="color:#fff">${currentScore.toFixed(1)}</span> objects</div>
         <div style="font-size:0.9em;color:#888">Runtime: ${timerElement.innerText}</div>
         ${getComboCount() > 0 ? `<div style="font-size:0.9em;color:#dcdcaa">Max Combo: x${getComboCount()}</div>` : ''}
     `;
-    checkHighScores(currentScore);
+    
+    // 只有计分模式才显示排行榜
+    if (isRankedMode()) {
+        checkHighScores(currentScore);
+    } else {
+        // 非计分模式直接显示排行榜但不提交
+        const scores = SECURE_STORE.load();
+        (window as any).renderLeaderboard(scores);
+    }
 }
 
 // 提交分数的包装函数
@@ -416,6 +462,8 @@ setInterval(() => {
 initComboDisplay();
 initAchievements(achievementData);
 initPracticeModeUI();
+initChallengeModeUI(); // 初始化挑战模式UI
+loadChallengeMode(); // 加载挑战模式设置
 initSettingsPanel(achievementData, checkAndUnlockAchievement);
 initTerminalInput();
 

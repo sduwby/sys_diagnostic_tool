@@ -2,7 +2,7 @@
   "name": "sys_diagnostic_tool",
   "version": "1.0.0",
   "description": "Professional system diagnostic and typing accuracy analyzer",
-  "main": "main.js",
+  "main": "dist/main.js",
   "scripts": {
     "prestart": "npm run compile",
     "prebuild": "npm run compile",
@@ -40,14 +40,14 @@
       "output": "dist"
     },
     "files": [
-      "main.js",
+      "dist/main.js",
       "dist/**/*.js",
       "src/**/*.html",
       "src/**/*.css",
       "src/**/*.svg"
     ],
     "extraMetadata": {
-      "main": "main.js"
+      "main": "dist/main.js"
     },
     "win": {
       "target": [

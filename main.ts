@@ -1,9 +1,9 @@
-const { app, BrowserWindow, Menu } = require('electron');
-const path = require('path');
+import { app, BrowserWindow, Menu } from 'electron';
+import * as path from 'path';
 
-let mainWindow;
+let mainWindow: BrowserWindow | null = null;
 
-function createWindow() {
+function createWindow(): void {
     mainWindow = new BrowserWindow({
         width: 1200,
         height: 800,
@@ -13,7 +13,6 @@ function createWindow() {
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
-            enableRemoteModule: false
         },
         icon: path.join(__dirname, 'src', 'icon.png'),
         title: 'System Diagnostic Tool'

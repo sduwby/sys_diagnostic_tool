@@ -1,4 +1,5 @@
-// --- 导入模块 ---
+// ---导入模块 ---
+import type { LangConfig } from './gameConfig';
 import { SECURE_STORE, CUSTOM_SNIPPETS_STORE, ACHIEVEMENT_STORE, SOUND_SETTINGS_STORE } from './storage';
 import { LANG_CONFIG, CUSTOM_LANG, getDifficultyMultiplier, getLevel, getMaxMisses } from './gameConfig';
 import { initComboDisplay, addCombo, forceResetCombo, getComboCount, setInteractionMode, onMissed } from './combo';
@@ -23,6 +24,9 @@ import {
 import './analytics'; // Analytics 函数挂载到 window
 import './achievementUI'; // Achievement UI 函数挂载到 window
 
+// --- 类型定义 ---
+type InteractionMode = 'click' | 'type';
+
 // 加载成就数据
 let achievementData: any = ACHIEVEMENT_STORE.load();
 
@@ -37,38 +41,38 @@ if (!soundSettings.enabled) {
 let customSnippets = CUSTOM_SNIPPETS_STORE.load();
 CUSTOM_LANG.snippets = customSnippets;
 
-const container = document.getElementById('game-container');
-const scoreElement = document.getElementById('score');
-const stabilityElement = document.getElementById('stability');
-const timerElement = document.getElementById('timer');
-const levelElement = document.getElementById('level');
-const mainUI = document.getElementById('main-ui');
-const fakeScreen = document.getElementById('fake-screen');
-const gameOverScreen = document.getElementById('game-over');
-const cheatMsg = document.getElementById('cheat-msg');
-const modeToggleBtn = document.getElementById('mode-toggle');
-const modeText = document.getElementById('mode-text');
-const typingInputArea = document.getElementById('typing-input-area');
-const typingInput = document.getElementById('typing-input');
+const container = document.getElementById('game-container')!;
+const scoreElement = document.getElementById('score')!;
+const stabilityElement = document.getElementById('stability')!;
+const timerElement = document.getElementById('timer')!;
+const levelElement = document.getElementById('level')!;
+const mainUI = document.getElementById('main-ui')!;
+const fakeScreen = document.getElementById('fake-screen')!;
+const gameOverScreen = document.getElementById('game-over')!;
+const cheatMsg = document.getElementById('cheat-msg')!;
+const modeToggleBtn = document.getElementById('mode-toggle')!;
+const modeText = document.getElementById('mode-text')!;
+const typingInputArea = document.getElementById('typing-input-area')!;
+const typingInput = document.getElementById('typing-input') as HTMLInputElement;
 
-let currentScore = 0.0;
-let missedCount = 0;
-let seconds = 0;
-let isBossMode = false;
-let isGameOver = false;
-let globalSpeedMultiplier = 1.0;
-let interactionMode = 'click'; // 'click' or 'type'
-let lastLevel = 1; // 追踪上一个等级
-let highestScore = 0; // 追踪最高分
+let currentScore: number = 0.0;
+let missedCount: number = 0;
+let seconds: number = 0;
+let isBossMode: boolean = false;
+let isGameOver: boolean = false;
+let globalSpeedMultiplier: number = 1.0;
+let interactionMode: InteractionMode = 'click';
+let lastLevel: number = 1;
+let highestScore: number = 0;
 
 // --- 核心生成逻辑 ---
-function createSnippet() {
+function createSnippet(): void {
     if (isBossMode || isGameOver) return;
 
     // 混合使用内置和自定义代码片段，并根据练习模式过滤
-    let availableConfigs = filterLanguageConfig([...LANG_CONFIG]);
+    let availableConfigs: LangConfig[] = filterLanguageConfig([...LANG_CONFIG]);
     if (CUSTOM_LANG.snippets.length > 0 && !isInPracticeMode()) {
-        availableConfigs.push(CUSTOM_LANG);
+        availableConfigs.push(CUSTOM_LANG as LangConfig);
     }
     
     if (availableConfigs.length === 0) {
@@ -111,7 +115,7 @@ function createSnippet() {
 
     const totalSpeed = (1.0 + Math.random() * 1.5) * langData.speedBonus * globalSpeedMultiplier;
 
-    function move() {
+    function move(): void {
         if (isBossMode || isGameOver) {
             div.remove();
             return;
@@ -143,7 +147,7 @@ function createSnippet() {
     requestAnimationFrame(move);
 }
 
-function addScore(amount, x, y) {
+function addScore(amount: number, x?: number, y?: number): void {
     currentScore += amount;
     currentScore = Math.round(currentScore * 10) / 10;
     scoreElement.innerText = currentScore.toFixed(1);
@@ -168,7 +172,7 @@ function addScore(amount, x, y) {
     if (x && y) showFloatScore(x, y, amount, combo);
 }
 
-function showFloatScore(x, y, amount, combo) {
+function showFloatScore(x: number, y: number, amount: number, combo: number): void {
     const el = document.createElement('div');
     el.className = 'float-score';
     
@@ -221,7 +225,7 @@ setInterval(() => {
     }
 }, 1000);
 
-const gameLoop = () => {
+const gameLoop = (): void => {
     if (!isBossMode && !isGameOver) createSnippet();
     const interval = 700 / globalSpeedMultiplier;
     setTimeout(gameLoop, interval);
@@ -250,7 +254,7 @@ if (typingInput) {
         if (inputValue.length === 0) {
             // 清除所有高亮
             document.querySelectorAll('.code-line').forEach(el => {
-                el.style.outline = 'none';
+                (el as HTMLElement).style.outline = 'none';
             });
             return;
         }
@@ -258,12 +262,13 @@ if (typingInput) {
         // 查找匹配的代码片段
         let matched = false;
         document.querySelectorAll('.code-line').forEach(el => {
-            const text = el.dataset.text;
+            const htmlEl = el as HTMLElement;
+            const text = htmlEl.dataset.text;
             if (text && text.toLowerCase().includes(inputValue.toLowerCase())) {
-                el.style.outline = '2px solid #4ec9b0';
+                htmlEl.style.outline = '2px solid #4ec9b0';
                 matched = true;
             } else {
-                el.style.outline = 'none';
+                htmlEl.style.outline = 'none';
             }
         });
     });
@@ -278,13 +283,14 @@ if (typingInput) {
             
             const allSnippets = Array.from(document.querySelectorAll('.code-line'));
             const matchedSnippets = allSnippets.filter(el => {
-                const text = el.dataset.text;
+                const htmlEl = el as HTMLElement;
+                const text = htmlEl.dataset.text;
                 return text && text.toLowerCase().startsWith(inputValue.toLowerCase());
             });
 
             // 必须是唯一匹配
             if (matchedSnippets.length === 1) {
-                const matched = matchedSnippets[0];
+                const matched = matchedSnippets[0] as HTMLElement;
                 trackClick(achievementData, checkAndUnlockAchievement); // 追踪键盘匹配（也算作点击）
                 // 计算得分（根据语言配置）
                 const className = matched.className;
@@ -303,7 +309,7 @@ if (typingInput) {
                 
                 // 清除所有高亮
                 document.querySelectorAll('.code-line').forEach(el => {
-                    el.style.outline = 'none';
+                    (el as HTMLElement).style.outline = 'none';
                 });
             }
         }
@@ -328,7 +334,7 @@ window.addEventListener('keydown', (e) => {
             // 聚焦命令行输入框
             setTimeout(() => {
                 const terminalInput = document.getElementById('terminal-input');
-                if (terminalInput) terminalInput.focus();
+                if (terminalInput) (terminalInput as HTMLElement).focus();
             }, 100);
         } else {
             trackBossKeyRelease(achievementData, checkAndUnlockAchievement); // 追踪 Boss 键释放（计算反应时间）
@@ -339,7 +345,8 @@ window.addEventListener('keydown', (e) => {
     }
 
     // 排行榜输入
-    if (e.key === 'Enter' && isGameOver && !document.getElementById('input-area').classList.contains('hidden')) {
+    const inputArea = document.getElementById('input-area');
+    if (e.key === 'Enter' && isGameOver && inputArea && !inputArea.classList.contains('hidden')) {
         handleSubmitScore();
         return;
     }
@@ -356,21 +363,22 @@ window.addEventListener('keydown', (e) => {
             showFloatScore,
             isBossMode,
             isGameOver,
-            (m) => { globalSpeedMultiplier = m; },
+            (m: number) => { globalSpeedMultiplier = m; },
             () => globalSpeedMultiplier
         );
     }
 });
 
-// --- 排行榜相关 (保持不变) ---
-function triggerGameOver() {
+// --- 排行榜相关 ---
+function triggerGameOver(): void {
     isGameOver = true;
     soundEffects.playGameOver(); // 播放游戏结束音效
     forceResetCombo(); //重置连击
     deleteSaveData(); // 清除存档
     onGameEnd(seconds, missedCount, achievementData, checkAndUnlockAchievement); // 调用成就系统钩子
     gameOverScreen.style.display = 'block';
-    document.getElementById('current-result').innerHTML = `
+    const currentResultDiv = document.getElementById('current-result')!;
+    currentResultDiv.innerHTML = `
         <div>Processed: <span style="color:#fff">${currentScore.toFixed(1)}</span> objects</div>
         <div style="font-size:0.9em;color:#888">Runtime: ${timerElement.innerText}</div>
         ${getComboCount() > 0 ? `<div style="font-size:0.9em;color:#dcdcaa">Max Combo: x${getComboCount()}</div>` : ''}
@@ -379,7 +387,7 @@ function triggerGameOver() {
 }
 
 // 提交分数的包装函数
-function handleSubmitScore() {
+function handleSubmitScore(): void {
     submitScore(currentScore, achievementData, checkAndUnlockAchievement);
 }
 
@@ -404,36 +412,23 @@ setInterval(() => {
     }
 }, 1000);
 
-// 窗口可见性变化检测（用于 Full Stack）
-let visibilityHidden = false;
-document.addEventListener('visibilitychange', () => {
-    if (document.hidden && !visibilityHidden) {
-        visibilityHidden = true;
-    } else if (!document.hidden && visibilityHidden) {
-        achievementData.stats.tabSwitchCount++;
-        checkAndUnlockAchievement('full_stack', achievementData, undefined, true);
-        visibilityHidden = false;
-    }
-});
-
-// 初始化
-initComboDisplay(); // 初始化连击显示
-initPracticeModeUI(); // 初始化练习模式UI
+// --- 初始化 ---
+initComboDisplay();
 initAchievements(achievementData);
-initTerminalInput(); // 初始化终端输入
-initSettingsPanel(achievementData, checkAndUnlockAchievement); // 初始化设置面板
-checkFridayAfternoon(achievementData, checkAndUnlockAchievement);
+initPracticeModeUI();
+initSettingsPanel(achievementData, checkAndUnlockAchievement);
+initTerminalInput();
 
-// --- 音效控制UI ---
-const soundToggleBtn = document.getElementById('sound-toggle');
-const soundStatusSpan = document.getElementById('sound-status');
-const volumeSlider = document.getElementById('volume-slider');
+// 音效控制 UI 初始化
+const soundToggleBtn = document.getElementById('sound-toggle')!;
+const soundStatusSpan = document.getElementById('sound-status')!;
+const volumeSlider = document.getElementById('volume-slider') as HTMLInputElement;
 
 // 更新UI状态
-function updateSoundUI() {
+function updateSoundUI(): void {
     soundStatusSpan.innerText = soundSettings.enabled ? 'ON' : 'OFF';
     soundToggleBtn.style.color = soundSettings.enabled ? '#4ec9b0' : '#888';
-    volumeSlider.value = soundSettings.volume * 100;
+    volumeSlider.value = String(soundSettings.volume * 100);
 }
 
 // 静音按钮
@@ -446,7 +441,7 @@ soundToggleBtn.addEventListener('click', () => {
 
 // 音量滑块
 volumeSlider.addEventListener('input', (e) => {
-    const volume = parseFloat(e.target.value) / 100;
+    const volume = parseFloat((e.target as HTMLInputElement).value) / 100;
     soundSettings.volume = volume;
     soundEffects.setVolume(volume);
     SOUND_SETTINGS_STORE.save(soundSettings);
@@ -487,3 +482,26 @@ window.addEventListener('beforeunload', () => {
         });
     }
 });
+
+// 启动时检查是否有存档需要恢复
+showRestorePrompt((progress: any) => {
+    currentScore = progress.currentScore || 0;
+    missedCount = progress.missedCount || 0;
+    seconds = progress.seconds || 0;
+    interactionMode = progress.interactionMode || 'click';
+    
+    scoreElement.innerText = currentScore.toFixed(1);
+    modeText.innerText = interactionMode === 'click' ? 'Click' : 'Type';
+    setInteractionMode(interactionMode);
+    
+    if (interactionMode === 'type') {
+        typingInputArea.style.display = 'block';
+    }
+});
+
+// 成就系统后台检查
+setInterval(() => {
+    if (!isBossMode && !isGameOver) {
+        checkAchievements(achievementData, checkAndUnlockAchievement);
+    }
+}, 500);

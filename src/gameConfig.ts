@@ -1,7 +1,16 @@
 // --- 游戏配置模块 ---
 
+// 语言配置接口
+export interface LangConfig {
+    name: string;
+    score: number;
+    speedBonus: number;
+    colorClass: string;
+    snippets: string[];
+}
+
 // 语言配置
-export const LANG_CONFIG = [
+export const LANG_CONFIG: LangConfig[] = [
     { name: 'JS', score: 1.0, speedBonus: 1.000, colorClass: 'c-ts', snippets: ['console.log(v);', 'const x = 0;', 'await fetch();', 'res.json()'] },
     { name: 'C++', score: 1.5, speedBonus: 1.025, colorClass: 'c-cpp', snippets: ['int main()', 'std::cout<<x;', 'ptr = &y;', '#include<os>'] },
     { name: 'Java', score: 2.0, speedBonus: 1.050, colorClass: 'c-java', snippets: ['public class A', 'System.out.println', 'List<?> list', 'throws Error'] },
@@ -10,12 +19,12 @@ export const LANG_CONFIG = [
 ];
 
 // 自定义代码库配置
-export const CUSTOM_LANG = {
+export const CUSTOM_LANG: LangConfig = {
     name: 'Custom',
     score: 1.5,
     speedBonus: 1.000,
     colorClass: 'c-custom',
-    snippets: [] as string[]
+    snippets: []
 };
 
 // 难度计算
